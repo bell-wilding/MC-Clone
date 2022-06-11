@@ -11,6 +11,10 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "Shader.h"
+#include "Texture.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 int main(void) {
 
@@ -42,28 +46,50 @@ int main(void) {
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
-    float vertices[] = { 
-         0.5f,  0.5f, 
-         0.5f, -0.5f, 
-        -0.5f, -0.5f, 
-        -0.5f,  0.5f
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    GLfloat vertices[] = {
+      -0.5f,  0.5f,  0.0f,
+      -0.5f, -0.5f,  0.0f,
+       0.5f,  0.5f,  0.0f,
+       0.5f, -0.5f,  0.0f,
+      -0.5f,  0.5f, -0.5f,
+      -0.5f, -0.5f, -0.5f,
+       0.5f,  0.5f, -0.5f,
+       0.5f, -0.5f, -0.5f
     };
 
     unsigned int indices[] = {
-        0, 1, 3,
-        1, 2, 3
+        0, 2, 3, 0, 3, 1,
+        2, 6, 7, 2, 7, 3,
+        6, 4, 5, 6, 5, 7,
+        4, 0, 1, 4, 1, 5,
+        0, 4, 6, 0, 6, 2,
+        1, 5, 7, 1, 7, 3,
     };
 
     VertexArray va;
-    VertexBuffer vb(vertices, 4 * 2 * sizeof(float));
+    VertexBuffer vb(vertices, 8 * 3 * sizeof(float));
     VertexBufferLayout layout;
-    layout.Push<float>(2);
+    layout.Push<float>(3);
+    //layout.Push<float>(2);
     va.AddBuffer(vb, layout);
 
-    IndexBuffer ib(indices, 6);
+    IndexBuffer ib(indices, 6 * 6);
+
+    glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-0.25, 0, 0));
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.25, -0.25, 0));
+    glm::vec4 vp(100.0f, 100.0f, 0.0f, 1.0f);
+
+    glm::mat4 mvp = proj * view * model;
 
 	Shader shader("res/shaders/Basic.shader");
 	shader.Bind();
+    shader.SetUniformMat4f("u_MVP", mvp);
+
+    Texture texture1("res/textures/tex.JPG");
 
     va.Unbind();
 	vb.Unbind();
@@ -81,6 +107,8 @@ int main(void) {
 		renderer.Clear();
 
 		shader.Bind();
+        texture1.Bind();
+        shader.SetUniform1i("u_Texture", 0);
         shader.SetUniform4f( "u_Colour", r, 0.4f, 0.8f, 1);
 
 		renderer.Draw(va, ib, shader);
