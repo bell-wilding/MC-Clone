@@ -1,4 +1,5 @@
 #include "PerspectiveCamera.h"
+#include <iostream>
 #include <algorithm>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -10,6 +11,11 @@ PerspectiveCamera::PerspectiveCamera(GLFWwindow* window, const glm::vec3& pos, f
 	this->farPlane		= fPlane;
 	this->pitch			= pitch;
 	this->yaw			= yaw;
+
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
+	this->prevX = x;
+	this->prevY	= y;
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
@@ -23,8 +29,13 @@ void PerspectiveCamera::Update() {
 
 	glm::vec2 relativePos(x - prevX, y - prevY);
 
-	pitch	-= relativePos.y;
-	yaw		-= relativePos.x;
+	float turnSpeed = 0.1f;
+
+	pitch	-= relativePos.y * turnSpeed;
+	yaw		-= relativePos.x * turnSpeed;
+
+	prevX = x;
+	prevY = y;
 
 	pitch = std::min(pitch,  90.0f);
 	pitch = std::max(pitch, -90.0f);
@@ -35,25 +46,25 @@ void PerspectiveCamera::Update() {
 	if (yaw > 360.0f)
 		yaw -= 360.0f;
 
-	float frameSpeed = 10;
+	float frameSpeed = 0.1f;
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		glm::mat4 posM = glm::rotate(posM, glm::radians(yaw), glm::vec3(0, 1, 0));
+		glm::mat4 posM = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0, 1, 0));
 		glm::vec3 posDif = (posM * glm::vec4(0, 0, -1, 1) * frameSpeed);
 		position += posDif;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		glm::mat4 posM = glm::rotate(posM, glm::radians(yaw), glm::vec3(0, 1, 0));
+		glm::mat4 posM = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0, 1, 0));
 		glm::vec3 posDif = (posM * glm::vec4(0, 0, -1, 1) * frameSpeed);
-		position += posDif;
+		position -= posDif;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		glm::mat4 posM = glm::rotate(posM, glm::radians(yaw), glm::vec3(0, 1, 0));
+		glm::mat4 posM = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0, 1, 0));
 		glm::vec3 posDif = (posM * glm::vec4(-1, 0, 0, 1) * frameSpeed);
 		position += posDif;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		glm::mat4 posM = glm::rotate(posM, glm::radians(yaw), glm::vec3(0, 1, 0));
+		glm::mat4 posM = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0, 1, 0));
 		glm::vec3 posDif = (posM * glm::vec4(-1, 0, 0, 1) * frameSpeed);
 		position -= posDif;
 	}
@@ -61,16 +72,15 @@ void PerspectiveCamera::Update() {
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 		position.y += frameSpeed;
 	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		position.y -= frameSpeed;
 	}
 }
 
 glm::mat4 PerspectiveCamera::BuildViewMatrix() const {
-	glm::mat4 m1 = glm::rotate(m1, glm::radians(-pitch), glm::vec3(1, 0, 0));
-	glm::mat4 m2 = glm::rotate(m2, glm::radians(-yaw), glm::vec3(0, 1, 0));
-	glm::mat4 m3 = glm::translate(m3, -position);
-	return m1 * m2 * m3;
+	return glm::rotate(glm::mat4(1.0f), glm::radians(-pitch), glm::vec3(1, 0, 0)) 
+		* glm::rotate(glm::mat4(1.0f), glm::radians(-yaw), glm::vec3(0, 1, 0))
+		* glm::translate(glm::mat4(1.0f), -position);
 }
 
 glm::mat4 PerspectiveCamera::BuildProjectionMatrix() const {
