@@ -5,11 +5,7 @@
 Object::Object(glm::vec3 position, glm::vec3 scale, glm::vec3 orientation) 
 	: position(position), scale(scale), orientation(orientation) {
 
-	glm::mat4 pos = glm::translate(glm::mat4(1.0f), position);
-	glm::mat4 ori = ToMatrix(ToQuaternion(orientation));
-	glm::mat4 sca = glm::scale(glm::mat4(1.0f), scale);
-
-	worldMatrix = pos * ori * sca;
+	UpdateMatrix();
 }
 
 Object::~Object() {
@@ -61,4 +57,12 @@ glm::vec4 Object::ToQuaternion(const glm::vec3 & eulerOrientation) {
 	q.w = (cos1 * cos2 * cos3) - (sin1 * sin2 * sin3);
 
 	return q;
+}
+
+void Object::UpdateMatrix() {
+	glm::mat4 pos = glm::translate(glm::mat4(1.0f), position);
+	glm::mat4 ori = ToMatrix(ToQuaternion(orientation));
+	glm::mat4 sca = glm::scale(glm::mat4(1.0f), scale);
+
+	worldMatrix = pos * ori * sca;
 }

@@ -27,4 +27,7 @@ protected:
 	GLFWwindow* window;
 
 	double prevX, prevY;
+
+	float moveSpeed;
+	float turnSensitivity;
 };

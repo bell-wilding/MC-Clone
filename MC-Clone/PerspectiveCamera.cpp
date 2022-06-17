@@ -17,6 +17,9 @@ PerspectiveCamera::PerspectiveCamera(GLFWwindow* window, const glm::vec3& pos, f
 	this->prevX = x;
 	this->prevY	= y;
 
+	moveSpeed = 0.05f;
+	turnSensitivity = 0.1f;
+
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
@@ -29,10 +32,8 @@ void PerspectiveCamera::Update() {
 
 	glm::vec2 relativePos(x - prevX, y - prevY);
 
-	float turnSpeed = 0.1f;
-
-	pitch	-= relativePos.y * turnSpeed;
-	yaw		-= relativePos.x * turnSpeed;
+	pitch	-= relativePos.y * turnSensitivity;
+	yaw		-= relativePos.x * turnSensitivity;
 
 	prevX = x;
 	prevY = y;
@@ -46,34 +47,32 @@ void PerspectiveCamera::Update() {
 	if (yaw > 360.0f)
 		yaw -= 360.0f;
 
-	float frameSpeed = 0.1f;
-
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		glm::mat4 posM = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0, 1, 0));
-		glm::vec3 posDif = (posM * glm::vec4(0, 0, -1, 1) * frameSpeed);
+		glm::vec3 posDif = (posM * glm::vec4(0, 0, -1, 1) * moveSpeed);
 		position += posDif;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 		glm::mat4 posM = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0, 1, 0));
-		glm::vec3 posDif = (posM * glm::vec4(0, 0, -1, 1) * frameSpeed);
+		glm::vec3 posDif = (posM * glm::vec4(0, 0, -1, 1) * moveSpeed);
 		position -= posDif;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
 		glm::mat4 posM = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0, 1, 0));
-		glm::vec3 posDif = (posM * glm::vec4(-1, 0, 0, 1) * frameSpeed);
+		glm::vec3 posDif = (posM * glm::vec4(-1, 0, 0, 1) * moveSpeed);
 		position += posDif;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		glm::mat4 posM = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), glm::vec3(0, 1, 0));
-		glm::vec3 posDif = (posM * glm::vec4(-1, 0, 0, 1) * frameSpeed);
+		glm::vec3 posDif = (posM * glm::vec4(-1, 0, 0, 1) * moveSpeed);
 		position -= posDif;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-		position.y += frameSpeed;
+		position.y += moveSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		position.y -= frameSpeed;
+		position.y -= moveSpeed;
 	}
 }
 
