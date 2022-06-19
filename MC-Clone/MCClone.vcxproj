@@ -147,7 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
-    <ClCompile Include="Block.cpp" />
+    <ClCompile Include="BlockRenderer.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PerspectiveCamera.cpp" />
@@ -162,7 +162,7 @@
     <None Include="res\shaders\Basic.shader" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Block.h" />
+    <ClInclude Include="BlockRenderer.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="IndexBuffer.h" />
