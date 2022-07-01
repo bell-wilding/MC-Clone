@@ -6,7 +6,7 @@
 #include "IndexBuffer.h"
 #include "Shader.h"
 
-#define ASSERT(X) if (!(x) _debugbreak();
+#define ASSERT(x) if (!(x)) __debugbreak();
 #define GLCall(x) GLClearError();\
 	x;\
 	ASSERT(GLLogCall(#x, __FILE__, __LINE__))

@@ -8,7 +8,7 @@
 #include <sstream>
 
 Shader::Shader(const std::string & filepath) : m_Filepath(filepath), m_RendererID(0) {
-	ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
+	ShaderProgramSource source = ParseShader(filepath);
 	m_RendererID = CreateShader(source.VertexSource, source.FragmentSource);
 }
 
@@ -98,6 +98,10 @@ void Shader::SetUniform1f(const std::string name, float f0) {
 
 void Shader::SetUniform4f(const std::string name, float f0, float f1, float f2, float f3) {
 	glUniform4f(GetUniformLocation(name), f0, f1, f2, f3);
+}
+
+void Shader::SetUniform3f(const std::string name, float f0, float f1, float f2) {
+	glUniform3f(GetUniformLocation(name), f0, f1, f2);
 }
 
 void Shader::SetUniformMat4f(const std::string name, const glm::mat4& matrix) {

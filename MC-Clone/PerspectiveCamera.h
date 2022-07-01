@@ -13,6 +13,10 @@ public:
 	glm::mat4 BuildViewMatrix() const;
 	glm::mat4 BuildProjectionMatrix() const;
 
+	glm::vec3 GetPosition() const { return position; }
+
+	void SetPosition(const glm::vec3 pos) { position = pos; }
+
 protected:
 
 	glm::vec3 position;

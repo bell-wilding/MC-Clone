@@ -17,7 +17,7 @@ PerspectiveCamera::PerspectiveCamera(GLFWwindow* window, const glm::vec3& pos, f
 	this->prevX = x;
 	this->prevY	= y;
 
-	moveSpeed = 0.05f;
+	moveSpeed = 0.5f;
 	turnSensitivity = 0.1f;
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

@@ -22,6 +22,9 @@
     <Filter Include="Vendor\stb_image">
       <UniqueIdentifier>{55bfb420-85f1-4e86-b0d1-68137e7696c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Vendor\Perlin Noise">
+      <UniqueIdentifier>{66583f98-fc62-4ddc-8473-e465ae730bdd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp">
@@ -54,7 +57,13 @@
     <ClCompile Include="Object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BlockRenderer.cpp">
+    <ClCompile Include="BlockAtlas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectionalLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -89,13 +98,26 @@
     <ClInclude Include="Object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BlockRenderer.h">
+    <ClInclude Include="BlockAtlas.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Block.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionalLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FastNoiseLite.h">
+      <Filter>Vendor\Perlin Noise</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\Basic.shader">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>
