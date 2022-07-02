@@ -1,10 +1,10 @@
 #include "Chunk.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/hash.hpp"
 
 #include <iostream>
-#include <map>
-#include <array>
+#include <unordered_map>
 
 Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(centerPos) {
 
@@ -18,27 +18,12 @@ Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(
 
 			for (int nextY = y - 1; nextY > -1; --nextY) {
 
-				bool shouldDraw = false;
+				if (nextY < y - 1)
+					blockData[x][nextY][z] = { BlockAtlas::Type::STONE,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z) };
+				else
+					blockData[x][nextY][z] = { BlockAtlas::Type::DIRT,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z) };
 
-				if (x == 0 || x == 15 || z == 0 || z == 15) {
-					shouldDraw = true;
-				}
-
-				if (nextY < 255 && blockData[x][nextY + 1][z].type == BlockAtlas::Type::GRASS) {
-					shouldDraw = true;
-				}
-
-				if (shouldDraw) {
-					if (nextY < y - 1)
-						blockData[x][nextY][z] = { BlockAtlas::Type::STONE,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z) };
-					else
-						blockData[x][nextY][z] = { BlockAtlas::Type::DIRT,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z) };
-
-					numBlocks++;
-				}
-				else {
-					blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z) };
-				}
+				numBlocks++;
 			}
 
 			for (int nextY = y + 1; nextY < 256; ++nextY) {
@@ -110,13 +95,6 @@ Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(
 	};
 	yPos.indices = { 0,  1,  2,  1,  3,  2 };
 
-	struct cmp {
-		bool operator()(const glm::ivec3& a, const glm::ivec3& b) const
-		{
-			return a.x == b.x && a.y == b.y;
-		}
-	};
-
 	CubeFace faces[6] = {
 		xNeg,
 		xPos,
@@ -126,11 +104,13 @@ Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(
 		yPos
 	};
 
-	std::map<glm::ivec3, CubeFace, cmp> faceMap;
+	std::unordered_map<glm::ivec3, CubeFace> faceMap;
 
 	for (int i = 0; i < 6; ++i) {
 		faceMap[checkDirections[i]] = faces[i];
 	}
+
+	int numVertices = 0;
 
 	for (int x = 0; x < 16; ++x) {
 		for (int y = 0; y < 256; ++y) {
@@ -146,11 +126,14 @@ Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(
 							CubeFace face = faceMap[checkDirections[i]];
 
 							for (glm::vec3 vert : face.vertices) {
-								vertices.push_back(glm::vec3(blockPos.x, blockPos.y, blockPos.z) + vert[i]);
+								vertices.push_back(blockPos.x + vert.x);
+								vertices.push_back(blockPos.y + vert.y);
+								vertices.push_back(blockPos.z + vert.z);
+								numVertices++;
 							}
 
 							for (unsigned int index : face.indices) {
-								indices.push_back(vertices.size() - 4 + index);
+								indices.push_back(numVertices - 4 + index);
 							}
 						}
 					}

@@ -20,15 +20,15 @@ public:
 
 	int GetNumBlocks() const { return numBlocks; };
 
-	std::vector<unsigned int> GetIndices() const { return indices; }
-	std::vector<glm::vec3> GetVertices() const { return vertices; }
+	std::vector<unsigned int> GetIndices() { return indices; }
+	std::vector<float> GetVertices() { return vertices; }
 
 protected:
 	glm::vec3 centerPosition;
 
 	BlockAtlas::Block blockData[16][256][16];
 
-	std::vector<glm::vec3> vertices;
+	std::vector<float> vertices;
 	std::vector<unsigned int> indices;
 
 	int numBlocks;

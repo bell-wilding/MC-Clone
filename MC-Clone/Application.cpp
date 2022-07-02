@@ -53,9 +53,9 @@ int main(void) {
 	glClearColor(0.41f, 0.64f, 1, 1);
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 
 	BlockAtlas blockAtlas;
 
@@ -91,14 +91,6 @@ int main(void) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);*/
 
-	Shader shader("res/shaders/Basic.shader");
-	shader.Bind();
-
-	Texture texture("res/textures/default_texture.png");
-	texture.Bind();
-
-	shader.SetUniform1i("u_Texture", 0);
-
 	FastNoiseLite* noise = new FastNoiseLite(3);
 	noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 	noise->SetFrequency(0.005f);
@@ -112,7 +104,7 @@ int main(void) {
 	unsigned int blockBuffer;
 	glGenBuffers(1, &blockBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, blockBuffer);
-	glBufferData(GL_ARRAY_BUFFER, chunk->GetVertices().size() * 3 * sizeof(float), &chunk->GetVertices(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, chunk->GetVertices().size() * sizeof(float), &chunk->GetVertices()[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
@@ -120,7 +112,15 @@ int main(void) {
 	unsigned int indexBuffer;
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->GetIndices().size() * sizeof(unsigned int), &chunk->GetIndices(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->GetIndices().size() * sizeof(unsigned int), &chunk->GetIndices()[0], GL_STATIC_DRAW);
+
+	Shader shader("res/shaders/Basic.shader");
+	shader.Bind();
+
+	Texture texture("res/textures/default_texture.png");
+	texture.Bind();
+
+	shader.SetUniform1i("u_Texture", 0);
 
 	/*Chunk* chunks[400];
 
@@ -195,7 +195,7 @@ int main(void) {
 		light.RotateDirection(glm::vec3(0, 0, 1), 0.01f);
 		shader.SetUniform3f("u_LightDir", light.GetLightDirection().x, light.GetLightDirection().y, light.GetLightDirection().z);
 
-		glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, chunk->GetIndices().size(), GL_UNSIGNED_INT, nullptr);
 
 		/*glBufferData(GL_ARRAY_BUFFER, 8 * 4 * 6 * sizeof(float), &blockAtlas.GetBlockVertexArray(BlockAtlas::Type::GRASS)[0], GL_STATIC_DRAW);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, grassBlocks.size() * sizeof(glm::vec4), &grassBlocks[0], GL_DYNAMIC_COPY);

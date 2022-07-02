@@ -22,7 +22,7 @@ void main() {
 						0.0, 0.0, 1.0, 0.0,
 						worldPos.x, worldPos.y, worldPos.z, 1.0);
 	gl_Position = mvp * position;
-	v_TexCoord = vec2(1.0, 15.0);
+	v_TexCoord = vec2(1.0, 1.0);
 	v_FragPos = worldPos.xyz;
 	v_Normal = vec3(0, 1, 0);
 };
@@ -62,5 +62,7 @@ void main() {
 	colour = mix(fogColour, colour, fogFactor);
 	if (colour.a < 0.01)
 		discard;
+
+	colour = vec4(1, 1, 1, 1);
 	//colour = u_Colour;
 };
