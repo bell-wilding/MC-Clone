@@ -2,8 +2,8 @@
 #version 430 core
 
 layout(location = 0) in vec4 position;
-layout(location = 1) in vec2 texCoord;
-layout(location = 2) in vec3 normal;
+//layout(location = 1) in vec2 texCoord;
+//layout(location = 2) in vec3 normal;
 
 out vec2 v_TexCoord;
 out vec3 v_FragPos;
@@ -11,20 +11,20 @@ out vec3 v_Normal;
 
 uniform mat4 u_VP;
 
-layout(std430, binding = 0) buffer positionBuffer {
-	vec4 worldPositions[];
-};
+//layout(std430, binding = 0) buffer positionBuffer {
+//	vec4 worldPositions[];
+//};
 
 void main() {
-	vec4 worldPos = worldPositions[gl_InstanceID];
+	vec4 worldPos = vec4(0, 0, 0, 0);
 	mat4 mvp = u_VP * mat4(	1.0, 0.0, 0.0, 0.0,
 						0.0, 1.0, 0.0, 0.0,
 						0.0, 0.0, 1.0, 0.0,
 						worldPos.x, worldPos.y, worldPos.z, 1.0);
 	gl_Position = mvp * position;
-	v_TexCoord = texCoord;
+	v_TexCoord = vec2(1.0, 15.0);
 	v_FragPos = worldPos.xyz;
-	v_Normal = normal;
+	v_Normal = vec3(0, 1, 0);
 };
 
 #shader fragment

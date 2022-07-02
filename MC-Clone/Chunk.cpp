@@ -1,5 +1,10 @@
 #include "Chunk.h"
+
+#include "glm/gtx/hash.hpp"
+
 #include <iostream>
+#include <map>
+#include <array>
 
 Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(centerPos) {
 
@@ -38,6 +43,118 @@ Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(
 
 			for (int nextY = y + 1; nextY < 256; ++nextY) {
 				blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z) };
+			}
+		}
+	}
+
+	glm::ivec3 checkDirections[] = {
+		glm::ivec3(-1, 0, 0),
+		glm::ivec3(1, 0, 0),
+		glm::ivec3(0, 0, -1),
+		glm::ivec3(0, 0, 1),
+		glm::ivec3(0, -1, 0),
+		glm::ivec3(0, 1, 0)
+	};
+
+	CubeFace xNeg;
+	xNeg.vertices = {
+	  glm::vec3(-0.5f, -0.5f, -0.5f),
+	  glm::vec3(-0.5f, -0.5f,  0.5f),
+	  glm::vec3(-0.5f,  0.5f, -0.5f),
+	  glm::vec3(-0.5f,  0.5f,  0.5f)
+	};
+	xNeg.indices = { 0,  1,  2,  1,  3,  2 };
+
+	CubeFace xPos;
+	xPos.vertices = {
+	  glm::vec3(0.5f, -0.5f,  0.5f),
+	  glm::vec3(0.5f, -0.5f, -0.5f),
+	  glm::vec3(0.5f,  0.5f,  0.5f),
+	  glm::vec3(0.5f,  0.5f, -0.5f)
+	};
+	xPos.indices = { 0,  1,  2,  1,  3,  2 };
+
+	CubeFace zNeg;
+	zNeg.vertices = {
+	  glm::vec3(0.5f, -0.5f, -0.5f),
+	  glm::vec3(-0.5f, -0.5f, -0.5f),
+	  glm::vec3(0.5f,  0.5f, -0.5f),
+	  glm::vec3(-0.5f,  0.5f, -0.5f)
+	};
+	zNeg.indices = { 0,  1,  2,  1,  3,  2 };
+
+	CubeFace zPos;
+	zPos.vertices = {
+	  glm::vec3(-0.5f, -0.5f,  0.5f),
+	  glm::vec3(0.5f, -0.5f,  0.5f),
+	  glm::vec3(-0.5f,  0.5f,  0.5f),
+	  glm::vec3(0.5f,  0.5f,  0.5f)
+	};
+	zPos.indices = { 0,  1,  2,  1,  3,  2 };
+
+	CubeFace yNeg;
+	yNeg.vertices = {
+	  glm::vec3(-0.5f, -0.5f,  0.5f),
+	  glm::vec3(-0.5f, -0.5f, -0.5f),
+	  glm::vec3(0.5f, -0.5f,  0.5f),
+	  glm::vec3(0.5f, -0.5f, -0.5f)
+	};
+	yNeg.indices = { 0,  1,  2,  1,  3,  2 };
+
+	CubeFace yPos;
+	yPos.vertices = {
+	  glm::vec3(-0.5f,  0.5f,  0.5f),
+	  glm::vec3(-0.5f,  0.5f, -0.5f),
+	  glm::vec3(0.5f,  0.5f,  0.5f),
+	  glm::vec3(0.5f,  0.5f, -0.5f)
+	};
+	yPos.indices = { 0,  1,  2,  1,  3,  2 };
+
+	struct cmp {
+		bool operator()(const glm::ivec3& a, const glm::ivec3& b) const
+		{
+			return a.x == b.x && a.y == b.y;
+		}
+	};
+
+	CubeFace faces[6] = {
+		xNeg,
+		xPos,
+		zNeg,
+		zPos,
+		yNeg,
+		yPos
+	};
+
+	std::map<glm::ivec3, CubeFace, cmp> faceMap;
+
+	for (int i = 0; i < 6; ++i) {
+		faceMap[checkDirections[i]] = faces[i];
+	}
+
+	for (int x = 0; x < 16; ++x) {
+		for (int y = 0; y < 256; ++y) {
+			for (int z = 0; z < 16; ++z) {
+
+				glm::ivec3 blockPos(x, y, z);
+
+				if (blockData[blockPos.x][blockPos.y][blockPos.z].type != BlockAtlas::Type::AIR && x > 0 && x < 15 && z > 0 && z < 15 && y > 0 && y < 255) {
+					for (int i = 0; i < 6; ++i) {
+						glm::ivec3 checkBlockPos = blockPos + checkDirections[i];
+
+						if (blockData[checkBlockPos.x][checkBlockPos.y][checkBlockPos.z].type == BlockAtlas::Type::AIR) {
+							CubeFace face = faceMap[checkDirections[i]];
+
+							for (glm::vec3 vert : face.vertices) {
+								vertices.push_back(glm::vec3(blockPos.x, blockPos.y, blockPos.z) + vert[i]);
+							}
+
+							for (unsigned int index : face.indices) {
+								indices.push_back(vertices.size() - 4 + index);
+							}
+						}
+					}
+				}
 			}
 		}
 	}

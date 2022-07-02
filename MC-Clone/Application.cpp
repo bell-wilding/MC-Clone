@@ -68,7 +68,7 @@ int main(void) {
 			20, 21, 22, 21, 23, 22
 	};
 
-	unsigned int vao;
+	/*unsigned int vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
@@ -89,7 +89,7 @@ int main(void) {
 	unsigned int indexBuffer;
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);*/
 
 	Shader shader("res/shaders/Basic.shader");
 	shader.Bind();
@@ -103,11 +103,30 @@ int main(void) {
 	noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 	noise->SetFrequency(0.005f);
 
-	Chunk* chunks[900];
+	Chunk* chunk = new Chunk(glm::vec3(7.5, 127.5, 7.5), *noise);
+
+	unsigned int vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	unsigned int blockBuffer;
+	glGenBuffers(1, &blockBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, blockBuffer);
+	glBufferData(GL_ARRAY_BUFFER, chunk->GetVertices().size() * 3 * sizeof(float), &chunk->GetVertices(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+
+	unsigned int indexBuffer;
+	glGenBuffers(1, &indexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->GetIndices().size() * sizeof(unsigned int), &chunk->GetIndices(), GL_STATIC_DRAW);
+
+	/*Chunk* chunks[400];
 
 	int i = 0;
-	for (int x = 0; x < 30; ++x) {
-		for (int z = 0; z < 30; ++z) {
+	for (int x = 0; x < 20; ++x) {
+		for (int z = 0; z < 20; ++z) {
 			chunks[i] = new Chunk(glm::vec3(7.5 + x * 16, 127.5, 7.5 + z * 16), *noise);
 			++i;
 		}
@@ -137,7 +156,7 @@ int main(void) {
 	unsigned int worldPosBuffer;
 	glGenBuffers(1, &worldPosBuffer);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, worldPosBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, grassBlocks.size() * sizeof(glm::vec4), &grassBlocks[0], GL_DYNAMIC_COPY);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, grassBlocks.size() * sizeof(glm::vec4), &grassBlocks[0], GL_DYNAMIC_COPY);*/
 
 	DirectionalLight light(glm::vec3(0, -1, 0));
 	PerspectiveCamera cam(window, glm::vec3(0, 200, 0), 70, 0.1f, 1000, 0, 0);
@@ -176,9 +195,9 @@ int main(void) {
 		light.RotateDirection(glm::vec3(0, 0, 1), 0.01f);
 		shader.SetUniform3f("u_LightDir", light.GetLightDirection().x, light.GetLightDirection().y, light.GetLightDirection().z);
 
-		//glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, nullptr);
 
-		glBufferData(GL_ARRAY_BUFFER, 8 * 4 * 6 * sizeof(float), &blockAtlas.GetBlockVertexArray(BlockAtlas::Type::GRASS)[0], GL_STATIC_DRAW);
+		/*glBufferData(GL_ARRAY_BUFFER, 8 * 4 * 6 * sizeof(float), &blockAtlas.GetBlockVertexArray(BlockAtlas::Type::GRASS)[0], GL_STATIC_DRAW);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, grassBlocks.size() * sizeof(glm::vec4), &grassBlocks[0], GL_DYNAMIC_COPY);
 		glDrawElementsInstanced(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0, grassBlocks.size());
 
@@ -188,7 +207,7 @@ int main(void) {
 
 		glBufferData(GL_ARRAY_BUFFER, 8 * 4 * 6 * sizeof(float), &blockAtlas.GetBlockVertexArray(BlockAtlas::Type::STONE)[0], GL_STATIC_DRAW);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, stoneBlocks.size() * sizeof(glm::vec4), &stoneBlocks[0], GL_DYNAMIC_COPY);
-		glDrawElementsInstanced(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0, stoneBlocks.size());
+		glDrawElementsInstanced(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0, stoneBlocks.size());*/
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
