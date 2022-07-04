@@ -10,6 +10,7 @@ BlockAtlas::BlockAtlas() {
 	uvMap[BlockAtlas::Type::LEAF]			= { glm::vec2(5, 13), glm::vec2(5, 13), glm::vec2(5, 13) };
 	uvMap[BlockAtlas::Type::STONE]			= { glm::vec2(2, 16), glm::vec2(2, 16), glm::vec2(2, 16) };
 	uvMap[BlockAtlas::Type::DIRT]			= { glm::vec2(3, 16), glm::vec2(3, 16), glm::vec2(3, 16) };
+	uvMap[BlockAtlas::Type::BEDROCK]		= { glm::vec2(2, 15), glm::vec2(2, 15), glm::vec2(2, 15) };
 
 	for (const auto &uvInfo: uvMap) {
 

@@ -16,7 +16,8 @@ public:
 		BIRCH_LOG,
 		LEAF,
 		SAND,
-		COBBLESTONE
+		COBBLESTONE,
+		BEDROCK
 	};
 
 	struct BlockUV {

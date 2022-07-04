@@ -23,6 +23,8 @@ Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(
 
 				if (nextY < y - 1)
 					blockData[x][nextY][z] = { BlockAtlas::Type::STONE,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z), false };
+				else if (nextY == 0)
+					blockData[x][nextY][z] = { BlockAtlas::Type::BEDROCK,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z), false };
 				else
 					blockData[x][nextY][z] = { BlockAtlas::Type::DIRT,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z), false };
 

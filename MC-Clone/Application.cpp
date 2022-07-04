@@ -141,7 +141,6 @@ int main(void) {
 
 			if (world[glm::vec2(playerChunkPos.x, playerChunkPos.y - 1)])
 				world[glm::vec2(playerChunkPos.x, playerChunkPos.y - 1)]->CreateMesh(blockAtlas, world);
-
 		}
 
 		glm::mat4 projMat = cam.BuildProjectionMatrix();
