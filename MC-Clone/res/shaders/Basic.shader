@@ -39,8 +39,8 @@ uniform vec3 u_CamPos;
 uniform vec3 u_LightDir;
 
 void main() {
-	float fogMaxDist = 1000;
-	float fogMinDist = 200;
+	float fogMaxDist = 500;
+	float fogMinDist = 400;
 	vec4 fogColour = vec4(0.41, 0.64, 1, 1);
 	float dist = length(u_CamPos - v_FragPos);
 	float fogFactor = (fogMaxDist - dist) / (fogMaxDist - fogMinDist);

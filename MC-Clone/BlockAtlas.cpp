@@ -3,7 +3,8 @@
 BlockAtlas::BlockAtlas() {
 
 	uvMap[BlockAtlas::Type::GRASS]			= { glm::vec2(1, 16), glm::vec2(3, 16), glm::vec2(4, 16) };
-	uvMap[BlockAtlas::Type::WOOD_LOG]		= { glm::vec2(6, 15), glm::vec2(6, 15), glm::vec2(5, 15) };
+	uvMap[BlockAtlas::Type::OAK_LOG]		= { glm::vec2(6, 15), glm::vec2(6, 15), glm::vec2(5, 15) };
+	uvMap[BlockAtlas::Type::BIRCH_LOG]		= { glm::vec2(6, 15), glm::vec2(6, 15), glm::vec2(6, 9) };
 	uvMap[BlockAtlas::Type::COBBLESTONE]	= { glm::vec2(1, 15), glm::vec2(1, 15), glm::vec2(1, 15) };
 	uvMap[BlockAtlas::Type::WOOD_PLANK]		= { glm::vec2(5, 16), glm::vec2(5, 16), glm::vec2(5, 16) };
 	uvMap[BlockAtlas::Type::LEAF]			= { glm::vec2(5, 13), glm::vec2(5, 13), glm::vec2(5, 13) };

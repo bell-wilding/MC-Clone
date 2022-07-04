@@ -12,7 +12,8 @@ public:
 		STONE,
 		DIRT,
 		WOOD_PLANK,
-		WOOD_LOG,
+		OAK_LOG,
+		BIRCH_LOG,
 		LEAF,
 		SAND,
 		COBBLESTONE

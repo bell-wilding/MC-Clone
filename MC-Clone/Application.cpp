@@ -67,7 +67,7 @@ int main(void) {
 	noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 	noise->SetFrequency(0.005f);
 
-	int dimensions = 40;
+	int dimensions = 15;
 	int startPos = dimensions / 2 - dimensions;
 	int endPos = dimensions / 2;
 
@@ -98,7 +98,7 @@ int main(void) {
 	shader.SetUniform1i("u_Texture", 0);
 
 	DirectionalLight light(glm::vec3(0.5, 1, 0));
-	PerspectiveCamera cam(window, glm::vec3(0, 200, 0), 70, 0.1f, 1000, 0, 0);
+	PerspectiveCamera cam(window, glm::vec3(0, 250, 0), 70, 0.1f, 1000, 0, 0);
 
 	float prevTime = 0, currentTime = 0, dt = 0;
 
@@ -123,33 +123,26 @@ int main(void) {
 
 		cam.Update();
 
-		glm::ivec2 playerChunkPos(cam.GetPosition().x / 16, cam.GetPosition().z / 16);
+		glm::ivec2 playerChunkPos((cam.GetPosition().x - 8) / 16, (cam.GetPosition().z - 8) / 16);
 		std::cout << playerChunkPos.x << " : " << playerChunkPos.y << std::endl;
 
-		/*if (!world.count(playerChunkPos + glm::ivec2(5, 0))) {
-			for (int z = -5; z < 5; ++z) {
-				world[glm::vec2(playerChunkPos.x + 5, z)] = new Chunk(glm::vec3((playerChunkPos.x + 5) * 16, 127.5, playerChunkPos.y * 16), *noise);
-				world[glm::vec2(playerChunkPos.x + 5, z)]->CreateMesh(blockAtlas, world);
-			}
+		if (!world[playerChunkPos]) {
+			world[playerChunkPos] = new Chunk(glm::vec3(playerChunkPos.x * 16, 127.5, playerChunkPos.y * 16), *noise);
+			world[playerChunkPos]->CreateMesh(blockAtlas, world);
+			
+			if (world[glm::vec2(playerChunkPos.x + 1, playerChunkPos.y)])
+				world[glm::vec2(playerChunkPos.x + 1, playerChunkPos.y)]->CreateMesh(blockAtlas, world);
+
+			if (world[glm::vec2(playerChunkPos.x - 1, playerChunkPos.y)])
+				world[glm::vec2(playerChunkPos.x - 1, playerChunkPos.y)]->CreateMesh(blockAtlas, world);
+
+			if (world[glm::vec2(playerChunkPos.x, playerChunkPos.y + 1)])
+				world[glm::vec2(playerChunkPos.x, playerChunkPos.y + 1)]->CreateMesh(blockAtlas, world);
+
+			if (world[glm::vec2(playerChunkPos.x, playerChunkPos.y - 1)])
+				world[glm::vec2(playerChunkPos.x, playerChunkPos.y - 1)]->CreateMesh(blockAtlas, world);
+
 		}
-		if (!world.count(playerChunkPos + glm::ivec2(-5, 0))) {
-			for (int z = -5; z < 5; ++z) {
-				world[glm::vec2(playerChunkPos.x - 5, z)] = new Chunk(glm::vec3((playerChunkPos.x - 5) * 16, 127.5, playerChunkPos.y * 16), *noise);
-				world[glm::vec2(playerChunkPos.x - 5, z)]->CreateMesh(blockAtlas, world);
-			}
-		}
-		if (!world.count(playerChunkPos + glm::ivec2(0, 5))) {
-			for (int x = -5; x < 5; ++x) {
-				world[glm::vec2(x, playerChunkPos.y + 5)] = new Chunk(glm::vec3(playerChunkPos.x * 16, 127.5, (playerChunkPos.y + 5) * 16), *noise);
-				world[glm::vec2(x, playerChunkPos.y + 5)]->CreateMesh(blockAtlas, world);
-			}
-		}
-		if (!world.count(playerChunkPos + glm::ivec2(0, -5))) {
-			for (int x = -5; x < 5; ++x) {
-				world[glm::vec2(x, playerChunkPos.y - 5)] = new Chunk(glm::vec3(playerChunkPos.x * 16, 127.5, (playerChunkPos.y - 5) * 16), *noise);
-				world[glm::vec2(x, playerChunkPos.y - 5)]->CreateMesh(blockAtlas, world);
-			}
-		}*/
 
 		glm::mat4 projMat = cam.BuildProjectionMatrix();
 		glm::mat4 viewMat = cam.BuildViewMatrix();
@@ -161,11 +154,13 @@ int main(void) {
 
 		shader.SetUniform3f("u_LightDir", light.GetLightDirection().x, light.GetLightDirection().y, light.GetLightDirection().z);
 
-		for (int x = startPos; x < endPos; ++x) {
-			for (int z = startPos; z < endPos; ++z) {
+		for (int x = startPos-10; x < endPos+10; ++x) {
+			for (int z = startPos-10; z < endPos+10; ++z) {
 				Chunk* c = world[glm::ivec2(x, z)];
-				c->Bind();
-				glDrawElements(GL_TRIANGLES, c->GetIndices().size(), GL_UNSIGNED_INT, nullptr);
+				if (c) {
+					c->Bind();
+					glDrawElements(GL_TRIANGLES, c->GetIndices().size(), GL_UNSIGNED_INT, nullptr);
+				}
 			}
 		}
 
