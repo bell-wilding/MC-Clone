@@ -15,10 +15,14 @@
 #include "DirectionalLight.h"
 #include "Chunk.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/hash.hpp"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "FastNoiseLite.h"
 #include <map>
+#include <unordered_map>
 
 int main(void) {
 
@@ -33,7 +37,7 @@ int main(void) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(1920, 1080, "MC-Clone", NULL, NULL);
+	window = glfwCreateWindow(1280, 720, "MC-Clone", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		return -1;
@@ -53,66 +57,37 @@ int main(void) {
 	glClearColor(0.41f, 0.64f, 1, 1);
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glCullFace(GL_BACK);
+	glCullFace(GL_BACK);
 
 	BlockAtlas blockAtlas;
 
-	unsigned int indices[] = {
-			0,  1,  2,  1,  3,  2,
-			4,  5,  6,  5,  7,  6,
-			8,  9,  10, 9, 11, 10,
-			12, 13, 14, 13, 15, 14,
-			18, 17, 16, 18, 19, 17,
-			20, 21, 22, 21, 23, 22
-	};
-
-	/*unsigned int vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	unsigned int blockBuffer;
-	glGenBuffers(1, &blockBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, blockBuffer);
-	glBufferData(GL_ARRAY_BUFFER, 8 * 4 * 6 * sizeof(float), &blockAtlas.GetBlockVertexArray(BlockAtlas::Type::GRASS)[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void*)(3 * sizeof(float)));
-
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void*)(5 * sizeof(float)));
-
-	unsigned int indexBuffer;
-	glGenBuffers(1, &indexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);*/
-
-	FastNoiseLite* noise = new FastNoiseLite(3);
+	FastNoiseLite* noise = new FastNoiseLite();
 	noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 	noise->SetFrequency(0.005f);
 
-	Chunk* chunk = new Chunk(glm::vec3(7.5, 127.5, 7.5), *noise);
+	int dimensions = 40;
+	int startPos = dimensions / 2 - dimensions;
+	int endPos = dimensions / 2;
 
-	unsigned int vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	std::unordered_map<glm::ivec2, Chunk*> world;
+	int i = 0;
+	for (int x = startPos; x < endPos; ++x) {
+		for (int z = startPos; z < endPos; ++z) {
+			world[glm::ivec2(x, z)] = new Chunk(glm::vec3(x * 16, 127.5, z * 16), *noise);
+			++i;
+		}
+	}
 
-	unsigned int blockBuffer;
-	glGenBuffers(1, &blockBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, blockBuffer);
-	glBufferData(GL_ARRAY_BUFFER, chunk->GetVertices().size() * sizeof(float), &chunk->GetVertices()[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-
-	unsigned int indexBuffer;
-	glGenBuffers(1, &indexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->GetIndices().size() * sizeof(unsigned int), &chunk->GetIndices()[0], GL_STATIC_DRAW);
+	i = 0;
+	for (int x = startPos; x < endPos; ++x) {
+		for (int z = startPos; z < endPos; ++z) {
+			world[glm::ivec2(x, z)]->CreateMesh(blockAtlas, world);
+			++i;
+			std::cout << "Chunks Generated: " << i << std::endl;
+		}
+	}
 
 	Shader shader("res/shaders/Basic.shader");
 	shader.Bind();
@@ -122,43 +97,7 @@ int main(void) {
 
 	shader.SetUniform1i("u_Texture", 0);
 
-	/*Chunk* chunks[400];
-
-	int i = 0;
-	for (int x = 0; x < 20; ++x) {
-		for (int z = 0; z < 20; ++z) {
-			chunks[i] = new Chunk(glm::vec3(7.5 + x * 16, 127.5, 7.5 + z * 16), *noise);
-			++i;
-		}
-	}
-
-	std::vector<glm::vec4> grassBlocks;
-	std::vector<glm::vec4> dirtBlocks;
-	std::vector<glm::vec4> stoneBlocks;
-
-	for (Chunk* chunk : chunks)
-	{
-		std::vector<BlockAtlas::Block> blocks = chunk->GetBlocks();
-
-		for (BlockAtlas::Block block : blocks) {
-			if (block.type == BlockAtlas::Type::GRASS) {
-				grassBlocks.push_back(glm::vec4(block.position, 1));
-			}
-			else if (block.type == BlockAtlas::Type::DIRT) {
-				dirtBlocks.push_back(glm::vec4(block.position, 1));
-			}
-			else if (block.type == BlockAtlas::Type::STONE) {
-				stoneBlocks.push_back(glm::vec4(block.position, 1));
-			}
-		}
-	}
-
-	unsigned int worldPosBuffer;
-	glGenBuffers(1, &worldPosBuffer);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, worldPosBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, grassBlocks.size() * sizeof(glm::vec4), &grassBlocks[0], GL_DYNAMIC_COPY);*/
-
-	DirectionalLight light(glm::vec3(0, -1, 0));
+	DirectionalLight light(glm::vec3(0.5, 1, 0));
 	PerspectiveCamera cam(window, glm::vec3(0, 200, 0), 70, 0.1f, 1000, 0, 0);
 
 	float prevTime = 0, currentTime = 0, dt = 0;
@@ -184,6 +123,34 @@ int main(void) {
 
 		cam.Update();
 
+		glm::ivec2 playerChunkPos(cam.GetPosition().x / 16, cam.GetPosition().z / 16);
+		std::cout << playerChunkPos.x << " : " << playerChunkPos.y << std::endl;
+
+		/*if (!world.count(playerChunkPos + glm::ivec2(5, 0))) {
+			for (int z = -5; z < 5; ++z) {
+				world[glm::vec2(playerChunkPos.x + 5, z)] = new Chunk(glm::vec3((playerChunkPos.x + 5) * 16, 127.5, playerChunkPos.y * 16), *noise);
+				world[glm::vec2(playerChunkPos.x + 5, z)]->CreateMesh(blockAtlas, world);
+			}
+		}
+		if (!world.count(playerChunkPos + glm::ivec2(-5, 0))) {
+			for (int z = -5; z < 5; ++z) {
+				world[glm::vec2(playerChunkPos.x - 5, z)] = new Chunk(glm::vec3((playerChunkPos.x - 5) * 16, 127.5, playerChunkPos.y * 16), *noise);
+				world[glm::vec2(playerChunkPos.x - 5, z)]->CreateMesh(blockAtlas, world);
+			}
+		}
+		if (!world.count(playerChunkPos + glm::ivec2(0, 5))) {
+			for (int x = -5; x < 5; ++x) {
+				world[glm::vec2(x, playerChunkPos.y + 5)] = new Chunk(glm::vec3(playerChunkPos.x * 16, 127.5, (playerChunkPos.y + 5) * 16), *noise);
+				world[glm::vec2(x, playerChunkPos.y + 5)]->CreateMesh(blockAtlas, world);
+			}
+		}
+		if (!world.count(playerChunkPos + glm::ivec2(0, -5))) {
+			for (int x = -5; x < 5; ++x) {
+				world[glm::vec2(x, playerChunkPos.y - 5)] = new Chunk(glm::vec3(playerChunkPos.x * 16, 127.5, (playerChunkPos.y - 5) * 16), *noise);
+				world[glm::vec2(x, playerChunkPos.y - 5)]->CreateMesh(blockAtlas, world);
+			}
+		}*/
+
 		glm::mat4 projMat = cam.BuildProjectionMatrix();
 		glm::mat4 viewMat = cam.BuildViewMatrix();
 
@@ -192,22 +159,15 @@ int main(void) {
 		shader.SetUniformMat4f("u_VP", vp);
 		shader.SetUniform3f("u_CamPos", cam.GetPosition().x, cam.GetPosition().y, cam.GetPosition().z);
 
-		light.RotateDirection(glm::vec3(0, 0, 1), 0.01f);
 		shader.SetUniform3f("u_LightDir", light.GetLightDirection().x, light.GetLightDirection().y, light.GetLightDirection().z);
 
-		glDrawElements(GL_TRIANGLES, chunk->GetIndices().size(), GL_UNSIGNED_INT, nullptr);
-
-		/*glBufferData(GL_ARRAY_BUFFER, 8 * 4 * 6 * sizeof(float), &blockAtlas.GetBlockVertexArray(BlockAtlas::Type::GRASS)[0], GL_STATIC_DRAW);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, grassBlocks.size() * sizeof(glm::vec4), &grassBlocks[0], GL_DYNAMIC_COPY);
-		glDrawElementsInstanced(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0, grassBlocks.size());
-
-		glBufferData(GL_ARRAY_BUFFER, 8 * 4 * 6 * sizeof(float), &blockAtlas.GetBlockVertexArray(BlockAtlas::Type::DIRT)[0], GL_STATIC_DRAW);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, dirtBlocks.size() * sizeof(glm::vec4), &dirtBlocks[0], GL_DYNAMIC_COPY);
-		glDrawElementsInstanced(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0, dirtBlocks.size());
-
-		glBufferData(GL_ARRAY_BUFFER, 8 * 4 * 6 * sizeof(float), &blockAtlas.GetBlockVertexArray(BlockAtlas::Type::STONE)[0], GL_STATIC_DRAW);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, stoneBlocks.size() * sizeof(glm::vec4), &stoneBlocks[0], GL_DYNAMIC_COPY);
-		glDrawElementsInstanced(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0, stoneBlocks.size());*/
+		for (int x = startPos; x < endPos; ++x) {
+			for (int z = startPos; z < endPos; ++z) {
+				Chunk* c = world[glm::ivec2(x, z)];
+				c->Bind();
+				glDrawElements(GL_TRIANGLES, c->GetIndices().size(), GL_UNSIGNED_INT, nullptr);
+			}
+		}
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);

@@ -13,17 +13,7 @@ public:
 		DIRT,
 		WOOD_PLANK,
 		WOOD_LOG,
-		SAND,
-		COBBLESTONE
-	};
-
-	Type typeArray[8] = {
-		AIR,
-		GRASS,
-		STONE,
-		DIRT,
-		WOOD_PLANK,
-		WOOD_LOG,
+		LEAF,
 		SAND,
 		COBBLESTONE
 	};
@@ -37,12 +27,15 @@ public:
 	struct Block {
 		Type type;
 		glm::vec3 position;
+		bool isTransparent;
 	};
 
 	BlockAtlas();
 	~BlockAtlas();
 
 	std::vector<float> GetBlockVertexArray(BlockAtlas::Type type);
+
+	BlockUV GetBlockUVs(Type blockType);
 
 protected:
 

@@ -2,8 +2,8 @@
 #version 430 core
 
 layout(location = 0) in vec4 position;
-//layout(location = 1) in vec2 texCoord;
-//layout(location = 2) in vec3 normal;
+layout(location = 1) in vec2 texCoord;
+layout(location = 2) in vec3 normal;
 
 out vec2 v_TexCoord;
 out vec3 v_FragPos;
@@ -11,20 +11,15 @@ out vec3 v_Normal;
 
 uniform mat4 u_VP;
 
-//layout(std430, binding = 0) buffer positionBuffer {
-//	vec4 worldPositions[];
-//};
-
 void main() {
-	vec4 worldPos = vec4(0, 0, 0, 0);
 	mat4 mvp = u_VP * mat4(	1.0, 0.0, 0.0, 0.0,
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 0.0, 1.0, 0.0,
-						worldPos.x, worldPos.y, worldPos.z, 1.0);
+							0.0, 1.0, 0.0, 0.0,
+							0.0, 0.0, 1.0, 0.0,
+							0.0, 0.0, 0.0, 1.0);
 	gl_Position = mvp * position;
-	v_TexCoord = vec2(1.0, 1.0);
-	v_FragPos = worldPos.xyz;
-	v_Normal = vec3(0, 1, 0);
+	v_TexCoord = texCoord;
+	v_FragPos = position.xyz; // FIX
+	v_Normal = normal;
 };
 
 #shader fragment
@@ -44,8 +39,8 @@ uniform vec3 u_CamPos;
 uniform vec3 u_LightDir;
 
 void main() {
-	float fogMaxDist = 500;
-	float fogMinDist = 100;
+	float fogMaxDist = 1000;
+	float fogMinDist = 200;
 	vec4 fogColour = vec4(0.41, 0.64, 1, 1);
 	float dist = length(u_CamPos - v_FragPos);
 	float fogFactor = (fogMaxDist - dist) / (fogMaxDist - fogMinDist);
@@ -63,6 +58,4 @@ void main() {
 	if (colour.a < 0.01)
 		discard;
 
-	colour = vec4(1, 1, 1, 1);
-	//colour = u_Colour;
 };

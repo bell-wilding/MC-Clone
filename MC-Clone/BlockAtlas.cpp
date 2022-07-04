@@ -6,6 +6,7 @@ BlockAtlas::BlockAtlas() {
 	uvMap[BlockAtlas::Type::WOOD_LOG]		= { glm::vec2(6, 15), glm::vec2(6, 15), glm::vec2(5, 15) };
 	uvMap[BlockAtlas::Type::COBBLESTONE]	= { glm::vec2(1, 15), glm::vec2(1, 15), glm::vec2(1, 15) };
 	uvMap[BlockAtlas::Type::WOOD_PLANK]		= { glm::vec2(5, 16), glm::vec2(5, 16), glm::vec2(5, 16) };
+	uvMap[BlockAtlas::Type::LEAF]			= { glm::vec2(5, 13), glm::vec2(5, 13), glm::vec2(5, 13) };
 	uvMap[BlockAtlas::Type::STONE]			= { glm::vec2(2, 16), glm::vec2(2, 16), glm::vec2(2, 16) };
 	uvMap[BlockAtlas::Type::DIRT]			= { glm::vec2(3, 16), glm::vec2(3, 16), glm::vec2(3, 16) };
 
@@ -53,5 +54,10 @@ BlockAtlas::~BlockAtlas() {
 
 std::vector<float> BlockAtlas::GetBlockVertexArray(BlockAtlas::Type type) {
 	return vaMap[type];
+}
+
+BlockAtlas::BlockUV BlockAtlas::GetBlockUVs(Type blockType)
+{
+	return uvMap[blockType];
 }
 
