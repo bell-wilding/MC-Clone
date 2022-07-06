@@ -1,21 +1,27 @@
 #pragma once
 
-#include "GLFW/glfw3.h"
 #include <glm/glm.hpp>
+
+struct GLFWwindow;
 
 class PerspectiveCamera {
 public:
 	PerspectiveCamera(GLFWwindow* window, const glm::vec3& pos, float fov, float nPlane, float fPlane, float pitch, float yaw);
 	~PerspectiveCamera();
 
-	void Update();
+	void Update(float dt);
 
-	glm::mat4 BuildViewMatrix() const;
-	glm::mat4 BuildProjectionMatrix() const;
+	glm::mat4 BuildViewMatrix();
+	glm::mat4 BuildProjectionMatrix();
+
+	glm::vec3 ForwardVector();
 
 	glm::vec3 GetPosition() const { return position; }
 
 	void SetPosition(const glm::vec3 pos) { position = pos; }
+
+	float GetYaw() const { return yaw; }
+	float GetPitch() const { return pitch; }
 
 protected:
 
@@ -34,4 +40,9 @@ protected:
 
 	float moveSpeed;
 	float turnSensitivity;
+
+	bool increaseSpeed;
+
+	glm::mat4 viewMatrix;
+	glm::mat4 projectionMatrix;
 };

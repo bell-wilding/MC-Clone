@@ -55,7 +55,14 @@ void main() {
 
 	colour = ambient + diffuse;
 	colour = mix(fogColour, colour, fogFactor);
-	if (colour.a < 0.01)
+
+	/*if (v_TexCoord.x - floor(v_TexCoord.x) < 0.0075 || v_TexCoord.x - floor(v_TexCoord.x) > 0.9925 || v_TexCoord.y - floor(v_TexCoord.y) < 0.0075 || v_TexCoord.y - floor(v_TexCoord.y) > 0.9925) {
+		colour = vec4(0.25, 0.25, 0.25, 1);
+	}
+	else*/ if (colour.a < 0.01) {
 		discard;
+	}
+
+	colour.a = texColour.a;
 
 };

@@ -27,12 +27,23 @@ public:
 
 	void Bind();
 
+	void GenerateChunkData(int seed, FastNoiseLite& perlin);
+	void InitialiseBuffers();
+
+	void GenerateMeshData(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Chunk*>& world);
+	void BufferData();
+
 	void CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Chunk*>& world);
 
-	BlockAtlas::Block GetBlockAtPosition(int x, int y, int z);
+	glm::vec2 GetChunkCoords() const { return chunkCoords; }
+
+	BlockAtlas::Block& GetBlockAtPosition(glm::ivec3 position);
 
 protected:
 	glm::vec2 GetUVForVertex(int vertIndex, glm::vec2 uvs);
+
+	void Smoothen(FastNoiseLite& perlin);
+	int GetNumSurroundingSolidBlocks(int x, int y, int z);
 
 	void PlaceTree(int x, int y, int z);
 

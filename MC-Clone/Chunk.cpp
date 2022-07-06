@@ -6,64 +6,12 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/hash.hpp"
 
+#include <random>
+
 #include <iostream>
 
 Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(centerPos) {
-	chunkCoords = glm::vec2(centerPos.x / 16, centerPos.z / 16);
-
-	for (int x = 0; x < 16; ++x) {
-		for (int z = 0; z < 16; ++z) {
-			float yPos = (perlin.GetNoise(centerPosition.x - 7.5f + x, centerPosition.z - 7.5f + z) + 1) * 0.5f * 255;
-			int y = (int)yPos;
-
-			blockData[x][y][z] = { BlockAtlas::Type::GRASS,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + y, centerPosition.z - 7.5f + z), false };
-			numBlocks++;
-
-			for (int nextY = y - 1; nextY > -1; --nextY) {
-
-				if (nextY < y - 1)
-					blockData[x][nextY][z] = { BlockAtlas::Type::STONE,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z), false };
-				else if (nextY == 0)
-					blockData[x][nextY][z] = { BlockAtlas::Type::BEDROCK,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z), false };
-				else
-					blockData[x][nextY][z] = { BlockAtlas::Type::DIRT,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z), false };
-
-				numBlocks++;
-			}
-
-			for (int nextY = y + 1; nextY < 256; ++nextY) {
-				blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + nextY, centerPosition.z - 7.5f + z), true };
-			}
-		}
-	}
-
-	for (int x = 0; x < 16; ++x) {
-		for (int z = 0; z < 16; ++z) {
-			if (((double)rand() / (RAND_MAX)) < 0.02 && x > 2 && x < 14 && z > 2 && z < 14) {
-				float yPos = (perlin.GetNoise(centerPosition.x - 7.5f + x, centerPosition.z - 7.5f + z) + 1) * 0.5f * 255;
-				int y = (int)yPos;
-				PlaceTree(x, y + 1, z);
-			}
-		}
-	}
-
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	glGenBuffers(1, &vertexBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void*)(3 * sizeof(float)));
-
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void*)(5 * sizeof(float)));
-
-	glGenBuffers(1, &indexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	chunkCoords = glm::ivec2(centerPos.x / 16, centerPos.z / 16);
 }
 
 Chunk::~Chunk() {
@@ -102,7 +50,11 @@ void Chunk::Bind() {
 }
 
 void Chunk::CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Chunk*>& world) {
+	GenerateMeshData(blockAtlas, world);
+	BufferData();
+}
 
+void Chunk::GenerateMeshData(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Chunk*>& world) {
 	vertices.clear();
 	indices.clear();
 
@@ -175,6 +127,36 @@ void Chunk::CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Ch
 	yPos.indices = { 2,  3,  1,  2,  1,  0 };
 	yPos.normal = glm::vec3(0, -1, 0);
 
+	CubeFace faunaBlock1;
+	faunaBlock1.vertices = {
+		glm::vec3(-0.5f, -0.5f, 0.5f),
+		glm::vec3(0.5f, -0.5f, -0.5f),
+		glm::vec3(-0.5f, 0.5f, 0.5f),
+		glm::vec3(0.5f, 0.5f, -0.5f),
+		glm::vec3(-0.5f, -0.5f, 0.5f),
+		glm::vec3(0.5f, -0.5f, -0.5f),
+		glm::vec3(-0.5f, 0.5f, 0.5f),
+		glm::vec3(0.5f, 0.5f, -0.5f)
+	};
+	faunaBlock1.indices = { 2,  3,  1,  2,  1,  0,
+							0,  1,  2,  1,  3,  2 };
+	faunaBlock1.normal = glm::vec3(0, 0, 0);
+
+	CubeFace faunaBlock2;
+	faunaBlock2.vertices = {
+		glm::vec3(-0.5f, -0.5f, -0.5f),
+		glm::vec3(0.5f, -0.5f, 0.5f),
+		glm::vec3(-0.5f, 0.5f, -0.5f),
+		glm::vec3(0.5f, 0.5f, 0.5f),
+		glm::vec3(-0.5f, -0.5f, -0.5f),
+		glm::vec3(0.5f, -0.5f, 0.5f),
+		glm::vec3(-0.5f, 0.5f, -0.5f),
+		glm::vec3(0.5f, 0.5f, 0.5f)
+	};
+	faunaBlock2.indices = { 2,  3,  1,  2,  1,  0,
+							0,  1,  2,  1,  3,  2 };
+	faunaBlock2.normal = glm::vec3(0, 0, 0);
+
 	CubeFace faces[6] = {
 		xNeg,
 		xPos,
@@ -198,9 +180,45 @@ void Chunk::CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Ch
 
 				glm::ivec3 blockPos(x, y, z);
 
-				BlockAtlas::Type blockType = blockData[blockPos.x][blockPos.y][blockPos.z].type;
+				BlockAtlas::Block block = blockData[blockPos.x][blockPos.y][blockPos.z];
 
-				if (blockType != BlockAtlas::Type::AIR) {
+				if (block.isFauna) {
+
+					for (int j = 0; j < 4; ++j) {
+						vertices.push_back(centerPosition.x + blockPos.x + faunaBlock1.vertices[j].x);
+						vertices.push_back(centerPosition.y + blockPos.y + faunaBlock1.vertices[j].y);
+						vertices.push_back(centerPosition.z + blockPos.z + faunaBlock1.vertices[j].z);
+						glm::vec2 uvs = GetUVForVertex(j, blockAtlas.GetBlockUVs(block.type).sideUV);
+						vertices.push_back(uvs.x);
+						vertices.push_back(uvs.y);
+						vertices.push_back(faunaBlock1.normal.x);
+						vertices.push_back(faunaBlock1.normal.y);
+						vertices.push_back(faunaBlock1.normal.z);
+						numVertices++;
+					}
+
+					for (unsigned int index : faunaBlock1.indices) {
+						indices.push_back(numVertices - 4 + index);
+					}
+
+					for (int j = 0; j < 4; ++j) {
+						vertices.push_back(centerPosition.x + blockPos.x + faunaBlock2.vertices[j].x);
+						vertices.push_back(centerPosition.y + blockPos.y + faunaBlock2.vertices[j].y);
+						vertices.push_back(centerPosition.z + blockPos.z + faunaBlock2.vertices[j].z);
+						glm::vec2 uvs = GetUVForVertex(j, blockAtlas.GetBlockUVs(block.type).sideUV);
+						vertices.push_back(uvs.x);
+						vertices.push_back(uvs.y);
+						vertices.push_back(faunaBlock2.normal.x);
+						vertices.push_back(faunaBlock2.normal.y);
+						vertices.push_back(faunaBlock2.normal.z);
+						numVertices++;
+					}
+
+					for (unsigned int index : faunaBlock2.indices) {
+						indices.push_back(numVertices - 4 + index);
+					}
+				}
+				else if (block.type != BlockAtlas::Type::AIR && block.type != BlockAtlas::Type::WATER) {
 
 					for (int i = 0; i < 6; ++i) {
 						glm::ivec3 checkBlockPos = blockPos + checkDirections[i];
@@ -209,25 +227,25 @@ void Chunk::CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Ch
 
 						if (checkBlockPos.x == -1) {
 							Chunk* c = world[glm::ivec2(chunkCoords.x - 1, chunkCoords.y)];
-							if (c && c->GetBlockAtPosition(15, checkBlockPos.y, checkBlockPos.z).isTransparent) {
+							if (c && c->GetBlockAtPosition(glm::ivec3(15, checkBlockPos.y, checkBlockPos.z)).isTransparent) {
 								shouldDraw = true;
 							}
 						}
 						else if (checkBlockPos.x == 16) {
 							Chunk* c = world[glm::ivec2(chunkCoords.x + 1, chunkCoords.y)];
-							if (c && c->GetBlockAtPosition(0, checkBlockPos.y, checkBlockPos.z).isTransparent) {
+							if (c && c->GetBlockAtPosition(glm::ivec3(0, checkBlockPos.y, checkBlockPos.z)).isTransparent) {
 								shouldDraw = true;
 							}
 						}
 						else if (checkBlockPos.z == -1) {
 							Chunk* c = world[glm::ivec2(chunkCoords.x, chunkCoords.y - 1)];
-							if (c && c->GetBlockAtPosition(checkBlockPos.x, checkBlockPos.y, 15).isTransparent) {
+							if (c && c->GetBlockAtPosition(glm::ivec3(checkBlockPos.x, checkBlockPos.y, 15)).isTransparent) {
 								shouldDraw = true;
 							}
 						}
 						else if (checkBlockPos.z == 16) {
 							Chunk* c = world[glm::ivec2(chunkCoords.x, chunkCoords.y + 1)];
-							if (c && c->GetBlockAtPosition(checkBlockPos.x, checkBlockPos.y, 0).isTransparent) {
+							if (c && c->GetBlockAtPosition(glm::ivec3(checkBlockPos.x, checkBlockPos.y, 0)).isTransparent) {
 								shouldDraw = true;
 							}
 						}
@@ -242,7 +260,7 @@ void Chunk::CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Ch
 								vertices.push_back(centerPosition.x + blockPos.x + face.vertices[j].x);
 								vertices.push_back(centerPosition.y + blockPos.y + face.vertices[j].y);
 								vertices.push_back(centerPosition.z + blockPos.z + face.vertices[j].z);
-								glm::vec2 uvs = GetUVForVertex(j, i == 4 ? blockAtlas.GetBlockUVs(blockType).bottomUV : i == 5 ? blockAtlas.GetBlockUVs(blockType).topUV : blockAtlas.GetBlockUVs(blockType).sideUV);
+								glm::vec2 uvs = GetUVForVertex(j, i == 4 ? blockAtlas.GetBlockUVs(block.type).bottomUV : i == 5 ? blockAtlas.GetBlockUVs(block.type).topUV : blockAtlas.GetBlockUVs(block.type).sideUV);
 								vertices.push_back(uvs.x);
 								vertices.push_back(uvs.y);
 								vertices.push_back(face.normal.x);
@@ -260,7 +278,9 @@ void Chunk::CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Ch
 			}
 		}
 	}
+}
 
+void Chunk::BufferData() {
 	glBindVertexArray(vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -270,8 +290,8 @@ void Chunk::CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Ch
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 }
 
-BlockAtlas::Block Chunk::GetBlockAtPosition(int x, int y, int z) {
-	return blockData[x][y][z];
+BlockAtlas::Block& Chunk::GetBlockAtPosition(glm::ivec3 position) {
+	return blockData[position.x][position.y][position.z];
 }
 
 glm::vec2 Chunk::GetUVForVertex(int vertIndex, glm::vec2 uvs) {
@@ -289,31 +309,178 @@ glm::vec2 Chunk::GetUVForVertex(int vertIndex, glm::vec2 uvs) {
 	}
 }
 
+void Chunk::Smoothen(FastNoiseLite& perlin) {
+	for (int x = 0; x < 16; ++x) {
+		for (int z = 0; z < 16; ++z) {
+			float yPos = (perlin.GetNoise(centerPosition.x + x, centerPosition.z + +z) + 1) * 0.5f * 255;
+			int y = (int)yPos;
+
+			for (int nextY = y - 1; nextY > 0; --nextY) {
+
+				int numSurroundingBlocks = GetNumSurroundingSolidBlocks(x, nextY, z);
+
+				if (numSurroundingBlocks > 22) {
+					blockData[x][nextY][z] = { BlockAtlas::Type::STONE,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+				} else if (numSurroundingBlocks < 22) {
+					blockData[x][nextY][z] = { BlockAtlas::Type::AIR, glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+					numBlocks--;
+				}
+
+			}
+		}
+	}
+}
+
+int Chunk::GetNumSurroundingSolidBlocks(int x, int y, int z) {
+	int wallCount = 0;
+	for (int neighbourX = x-1; neighbourX < x+2; ++neighbourX) {
+		for (int neighbourY = y-1; neighbourY < y+2; ++neighbourY) {
+			for (int neighbourZ = z-1; neighbourZ < z+2; ++neighbourZ) {
+				if ((neighbourX > -1 && neighbourX < 16 && neighbourY > -1 && neighbourY < 256 && neighbourZ > -1 && neighbourZ < 16)) {
+					if ((neighbourX != x || neighbourY != y || neighbourZ != z)) {
+						if (GetBlockAtPosition(glm::ivec3(neighbourX, neighbourY, neighbourZ)).type != BlockAtlas::Type::AIR) {
+							wallCount++;
+						}
+					}
+				}
+				else {
+					wallCount++;
+				}
+			}
+		}
+	}
+	return wallCount;
+}
+
+void Chunk::GenerateChunkData(int seed, FastNoiseLite& perlin) {
+
+	float fillAmount = 0.1f;
+	//srand(seed);
+
+	for (int x = 0; x < 16; ++x) {
+		for (int z = 0; z < 16; ++z) {
+			float yPos = (perlin.GetNoise(centerPosition.x + x, centerPosition.z + z) + 1) * 0.5f * 255;
+			int y = (int)yPos;
+
+			blockData[x][y][z] = { BlockAtlas::Type::GRASS,  glm::vec3(centerPosition.x + x, centerPosition.y + y, centerPosition.z + z), false };
+			numBlocks++;
+
+			for (int nextY = y - 1; nextY > -1; --nextY) {
+
+				if (nextY == 0) {
+					blockData[x][nextY][z] = { BlockAtlas::Type::BEDROCK,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+				}
+				/*else if ((double)rand() / (RAND_MAX) < fillAmount) {
+					blockData[x][nextY][z] = { BlockAtlas::Type::AIR, glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+				}*/
+				else if (nextY < y - 1) {
+					blockData[x][nextY][z] = { BlockAtlas::Type::STONE,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+				}
+				else {
+					blockData[x][nextY][z] = { BlockAtlas::Type::DIRT,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+				}
+
+				numBlocks++;
+			}
+
+			for (int nextY = y + 1; nextY < 256; ++nextY) {
+				/*if (nextY > 70 && nextY < 100) {
+					blockData[x][nextY][z] = { BlockAtlas::Type::WATER,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+				} else if (nextY == 100) {
+					blockData[x][nextY][z] = { BlockAtlas::Type::WATER_TOP,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+				}
+				else {*/
+					blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+				//}
+			}
+
+			float randVal = ((double)rand() / (RAND_MAX));
+
+			if (y != 255) {
+				if (randVal < 0.5) {
+					blockData[x][y + 1][z] = { BlockAtlas::Type::TALL_GRASS,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+					numBlocks++;
+				}
+				if (randVal < 0.15) {
+					blockData[x][y + 1][z] = { BlockAtlas::Type::RED_FLOWER,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+				}
+				if (randVal < 0.1) {
+					blockData[x][y + 1][z] = { BlockAtlas::Type::YELLOW_FLOWER,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+				}
+				if (randVal < 0.05) {
+					blockData[x][y + 1][z] = { BlockAtlas::Type::RED_MUSHROOM,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+				}
+				if (randVal < 0.03) {
+					blockData[x][y + 1][z] = { BlockAtlas::Type::SAPLING,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+				}
+				if (randVal < 0.01) {
+					blockData[x][y + 1][z] = { BlockAtlas::Type::BROWN_MUSHROOM,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+				}
+			}
+		}
+	}
+
+	/*for (int i = 0; i < 1; ++i) {
+		Smoothen(perlin);
+	}*/
+
+	for (int x = 0; x < 16; ++x) {
+		for (int z = 0; z < 16; ++z) {
+			if (((double)rand() / (RAND_MAX)) < 0.02 && x > 2 && x < 14 && z > 2 && z < 14) {
+				float yPos = (perlin.GetNoise(centerPosition.x + x, centerPosition.z + z) + 1) * 0.5f * 255;
+				int y = (int)yPos;
+				PlaceTree(x, y + 1, z);
+			}
+		}
+	}
+
+}
+
+void Chunk::InitialiseBuffers() {
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	glGenBuffers(1, &vertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void*)(3 * sizeof(float)));
+
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void*)(5 * sizeof(float)));
+
+	glGenBuffers(1, &indexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+}
+
 void Chunk::PlaceTree(int x, int y, int z) {
 
 	bool birch = ((double)rand() / (RAND_MAX)) < 0.3;
 
 	for (int logPos = y; logPos < y + 5; ++logPos) {
-		blockData[x][logPos][z] = { birch ? BlockAtlas::Type::BIRCH_LOG : BlockAtlas::Type::OAK_LOG,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + logPos, centerPosition.z - 7.5f + z), false };
+		blockData[x][logPos][z] = { birch ? BlockAtlas::Type::BIRCH_LOG : BlockAtlas::Type::OAK_LOG,  glm::vec3(centerPosition.x + x, centerPosition.y + logPos, centerPosition.z + z), false };
 		numBlocks++;
 	}
 
 	int topPos = y + 6;
-	blockData[x][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z), true };
-	blockData[x+1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x + 1, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z), true };
-	blockData[x-1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x - 1, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z), true };
-	blockData[x][topPos][z+1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z + 1), true };
-	blockData[x][topPos][z-1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z - 1), true };
+	blockData[x][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z), true };
+	blockData[x+1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x + 1, centerPosition.y + topPos, centerPosition.z + z), true };
+	blockData[x-1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x - 1, centerPosition.y + topPos, centerPosition.z + z), true };
+	blockData[x][topPos][z+1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z + 1), true };
+	blockData[x][topPos][z-1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z - 1), true };
 
 	topPos--;
-	blockData[x + 1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x + 1, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z), true };
-	blockData[x - 1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x - 1, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z), true };
-	blockData[x][topPos][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z + 1), true };
-	blockData[x][topPos][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z - 1), true };
-	blockData[x + 1][topPos][z+1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x + 1, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z), true };
-	blockData[x - 1][topPos][z-1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x - 1, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z), true };
-	blockData[x-1][topPos][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z + 1), true };
-	blockData[x+1][topPos][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z - 1), true };
+	blockData[x + 1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x + 1, centerPosition.y + topPos, centerPosition.z + z), true };
+	blockData[x - 1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x - 1, centerPosition.y + topPos, centerPosition.z + z), true };
+	blockData[x][topPos][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z + 1), true };
+	blockData[x][topPos][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z - 1), true };
+	blockData[x + 1][topPos][z+1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x + 1, centerPosition.y + topPos, centerPosition.z + z), true };
+	blockData[x - 1][topPos][z-1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x - 1, centerPosition.y + topPos, centerPosition.z + z), true };
+	blockData[x-1][topPos][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z + 1), true };
+	blockData[x+1][topPos][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z - 1), true };
 
 	numBlocks += 13;
 
@@ -321,7 +488,7 @@ void Chunk::PlaceTree(int x, int y, int z) {
 	for (int leafPos = x + 1; leafPos < x + 3; ++leafPos) {
 		for (int leafPosY = topPos; leafPosY > topPos - 2; --leafPosY) {
 			for (int leafPosTwo = z - 2; leafPosTwo < z + 3; ++leafPosTwo) {
-				blockData[leafPos][leafPosY][leafPosTwo] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + leafPos, centerPosition.y - 127.5f + leafPosY, centerPosition.z - 7.5f + leafPosTwo), true };
+				blockData[leafPos][leafPosY][leafPosTwo] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + leafPos, centerPosition.y + leafPosY, centerPosition.z + leafPosTwo), true };
 				numBlocks++;
 			}
 		}
@@ -330,20 +497,20 @@ void Chunk::PlaceTree(int x, int y, int z) {
 	for (int leafPos = x - 1; leafPos > x - 3; --leafPos) {
 		for (int leafPosY = topPos; leafPosY > topPos - 2; --leafPosY) {
 			for (int leafPosTwo = z - 2; leafPosTwo < z + 3; ++leafPosTwo) {
-				blockData[leafPos][leafPosY][leafPosTwo] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + leafPos, centerPosition.y - 127.5f + leafPosY, centerPosition.z - 7.5f + leafPosTwo), true };
+				blockData[leafPos][leafPosY][leafPosTwo] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + leafPos, centerPosition.y + leafPosY, centerPosition.z + leafPosTwo), true };
 				numBlocks++;
 			}
 		}
 	}
 
-	blockData[x][topPos][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z + 1), true };
-	blockData[x][topPos-1][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos - 1, centerPosition.z - 7.5f + z + 1), true };
-	blockData[x][topPos][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z - 1), true };
-	blockData[x][topPos - 1][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos - 1, centerPosition.z - 7.5f + z - 1), true };
-	blockData[x][topPos][z + 2] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z + 1), true };
-	blockData[x][topPos - 1][z + 2] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos - 1, centerPosition.z - 7.5f + z + 1), true };
-	blockData[x][topPos][z - 2] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos, centerPosition.z - 7.5f + z - 1), true };
-	blockData[x][topPos - 1][z - 2] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x - 7.5f + x, centerPosition.y - 127.5f + topPos - 1, centerPosition.z - 7.5f + z - 1), true };
+	blockData[x][topPos][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z + 1), true };
+	blockData[x][topPos-1][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos - 1, centerPosition.z + z + 1), true };
+	blockData[x][topPos][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z - 1), true };
+	blockData[x][topPos - 1][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos - 1, centerPosition.z + z - 1), true };
+	blockData[x][topPos][z + 2] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z + 1), true };
+	blockData[x][topPos - 1][z + 2] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos - 1, centerPosition.z + z + 1), true };
+	blockData[x][topPos][z - 2] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z - 1), true };
+	blockData[x][topPos - 1][z - 2] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos - 1, centerPosition.z + z - 1), true };
 
 	numBlocks += 8;
 }

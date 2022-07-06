@@ -11,6 +11,36 @@ BlockAtlas::BlockAtlas() {
 	uvMap[BlockAtlas::Type::STONE]			= { glm::vec2(2, 16), glm::vec2(2, 16), glm::vec2(2, 16) };
 	uvMap[BlockAtlas::Type::DIRT]			= { glm::vec2(3, 16), glm::vec2(3, 16), glm::vec2(3, 16) };
 	uvMap[BlockAtlas::Type::BEDROCK]		= { glm::vec2(2, 15), glm::vec2(2, 15), glm::vec2(2, 15) };
+	uvMap[BlockAtlas::Type::WINDOW]			= { glm::vec2(2, 13), glm::vec2(2, 13), glm::vec2(2, 13) };
+	uvMap[BlockAtlas::Type::TALL_GRASS]		= { glm::vec2(13, 10), glm::vec2(13, 10), glm::vec2(13, 10) };
+	uvMap[BlockAtlas::Type::RED_FLOWER]		= { glm::vec2(13, 16), glm::vec2(13, 16), glm::vec2(13, 16) };
+	uvMap[BlockAtlas::Type::YELLOW_FLOWER]	= { glm::vec2(14, 16), glm::vec2(14, 16), glm::vec2(14, 16) };
+	uvMap[BlockAtlas::Type::SAPLING]		= { glm::vec2(16, 16), glm::vec2(16, 16), glm::vec2(16, 16) };
+	uvMap[BlockAtlas::Type::RED_MUSHROOM]	= { glm::vec2(13, 15), glm::vec2(13, 15), glm::vec2(13, 15) };
+	uvMap[BlockAtlas::Type::BROWN_MUSHROOM]	= { glm::vec2(14, 15), glm::vec2(14, 15), glm::vec2(14, 15) };
+	uvMap[BlockAtlas::Type::SAD_COWBOY]		= { glm::vec2(14, 9), glm::vec2(14, 9), glm::vec2(14, 9) };
+	uvMap[BlockAtlas::Type::WATER_TOP]		= { glm::vec2(14, 4), glm::vec2(14, 10), glm::vec2(14, 10) };
+	uvMap[BlockAtlas::Type::WATER]			= { glm::vec2(14, 10), glm::vec2(14, 10), glm::vec2(14, 10) };
+
+	names[0] = "Air";
+	names[1] = "Grass";
+	names[2] = "Stone";
+	names[3] = "Dirt";
+	names[4] = "Wood Plank";
+	names[5] = "Oak Log";
+	names[6] = "Birch Log";
+	names[7] = "Leaf";
+	names[8] = "Sand";
+	names[9] = "Cobblestone";
+	names[10] = "Bedrock";
+	names[11] = "Window";
+	names[12] = "Tall Grass";
+	names[13] = "Red Glower";
+	names[14] = "Yellow Flower";
+	names[15] = "Sapling";
+	names[16] = "Red Mushroom";
+	names[17] = "Brown Mushroom";
+	names[18] = "Sad Cowboy";
 
 	for (const auto &uvInfo: uvMap) {
 

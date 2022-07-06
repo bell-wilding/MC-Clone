@@ -3,6 +3,7 @@
 #include <map>
 #include <glm/glm.hpp>
 #include <vector>
+#include <string>
 
 class BlockAtlas {
 public:
@@ -17,7 +18,17 @@ public:
 		LEAF,
 		SAND,
 		COBBLESTONE,
-		BEDROCK
+		BEDROCK,
+		WINDOW,
+		TALL_GRASS,
+		RED_FLOWER,
+		YELLOW_FLOWER,
+		SAPLING,
+		RED_MUSHROOM,
+		BROWN_MUSHROOM,
+		SAD_COWBOY,
+		WATER_TOP,
+		WATER
 	};
 
 	struct BlockUV {
@@ -29,7 +40,8 @@ public:
 	struct Block {
 		Type type;
 		glm::vec3 position;
-		bool isTransparent;
+		bool isTransparent = false;
+		bool isFauna = false;
 	};
 
 	BlockAtlas();
@@ -37,12 +49,16 @@ public:
 
 	std::vector<float> GetBlockVertexArray(BlockAtlas::Type type);
 
+	std::string GetTypeName(Type type) { return names[type]; }
+
 	BlockUV GetBlockUVs(Type blockType);
 
 protected:
 
 	std::map<Type, std::vector<float>> vaMap;
 	std::map<Type, BlockUV> uvMap;
+
+	std::string names[21];
 
 };
 

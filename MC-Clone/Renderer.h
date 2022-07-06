@@ -1,21 +1,33 @@
 #pragma once
 
-#include <GL/glew.h>
-
-#include "VertexArray.h"
-#include "IndexBuffer.h"
 #include "Shader.h"
-
-#define ASSERT(x) if (!(x)) __debugbreak();
-#define GLCall(x) GLClearError();\
-	x;\
-	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-
-void GLClearError();
-bool GLLogCall(const char* function, const char* file, int line);
+#include "Texture.h"
+#include "LineRenderer.h"
+#include "DirectionalLight.h"
+#include "World.h"
+#include "PerspectiveCamera.h"
 
 class Renderer {
 public:
-	void Clear() const;
-	void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
+	Renderer(PerspectiveCamera* cam, GLFWwindow* window, World* world);
+	~Renderer() {};
+
+	void BeginFrame();
+	void RenderFrame();
+	void EndFrame();
+
+	void DrawBox(glm::vec3 boxPos, glm::vec3 boxSize);
+
+protected:
+	Shader chunkShader;
+	Texture textureAtlas;
+
+	LineRenderer lineRenderer;
+
+	DirectionalLight light;
+
+	PerspectiveCamera* camera;
+	World* world;
+
+	GLFWwindow* window;
 };
