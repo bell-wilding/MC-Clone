@@ -14,6 +14,9 @@ public:
 
 	void Update(float dt, GLFWwindow* window, World* world, Renderer& renderer);
 
+	glm::ivec2 GetChunkCoordinates() { return chunkCoordinates; }
+	glm::ivec3 GetBlockCoordinates() { return blockCoordinates; }
+
 protected:
 
 	void HandleBlockInteraction(GLFWwindow* window, World* world, Renderer& renderer);

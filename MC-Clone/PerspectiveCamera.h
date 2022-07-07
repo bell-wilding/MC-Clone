@@ -23,6 +23,8 @@ public:
 	float GetYaw() const { return yaw; }
 	float GetPitch() const { return pitch; }
 
+	void SetControlsActive(bool active) { controlsActive = active; }
+
 protected:
 
 	glm::vec3 position;
@@ -42,6 +44,8 @@ protected:
 	float turnSensitivity;
 
 	bool increaseSpeed;
+
+	bool controlsActive;
 
 	glm::mat4 viewMatrix;
 	glm::mat4 projectionMatrix;
