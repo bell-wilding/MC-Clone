@@ -152,6 +152,7 @@
     <ClCompile Include="BlockAtlas.cpp" />
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="CollisionDetection.cpp" />
+    <ClCompile Include="CubemapTexture.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_demo.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="BlockAtlas.h" />
     <ClInclude Include="Chunk.h" />
     <ClInclude Include="CollisionDetection.h" />
+    <ClInclude Include="CubemapTexture.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="FastNoiseLite.h" />
     <ClInclude Include="imconfig.h" />

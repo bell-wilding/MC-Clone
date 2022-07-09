@@ -37,7 +37,7 @@ void Player::HandleBlockInteraction(GLFWwindow* window, World* world, Renderer& 
 	BlockAtlas::Block block = GetNearestBlock(world, collisionNormal);
 
 	if (block.type != BlockAtlas::Type::AIR) {
-		renderer.DrawBox(block.position, glm::vec3(0.505, 0.505, 0.505));
+		renderer.DrawBox(block.position, glm::vec3(0.502, 0.502, 0.502));
 		if (canBreakBlock && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			world->DestroyBlock(block.position);
 			canBreakBlock = false;
