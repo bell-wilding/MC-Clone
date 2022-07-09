@@ -2,7 +2,10 @@
 
 #include <string>
 #include <iostream>
+#include <map>
+#include <vector>
 
+#include "GLFW/glfw3.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -28,18 +31,94 @@ UserInterface::UserInterface(GLFWwindow* window) : window(window) {
 
 	io.Fonts->AddFontFromFileTTF("res/fonts/MinecraftRegular-Bmg3.ttf", 28.0f);
 
-	display = false;
+	showDebugInfo = false;
+	blockMenuActive = false;
+	pressedKey = false;
+	selectedBlockType = BlockAtlas::Type::GRASS;
 }
 
 UserInterface::~UserInterface() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+}
 
+void UserInterface::Update(Player& player) {
+
+	if (blockMenuActive) {
+		player.SetCanBreakBlock(false);
+		player.SetCanPlaceBlock(false);
+		player.ChangeActiveBlockType(DrawBlockMenu());
+		if (player.GetActiveBlockType() != selectedBlockType) {
+			player.GetPlayerCamera()->SetControlsActive(true);
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			blockMenuActive = false;
+		}
+		selectedBlockType = player.GetActiveBlockType();
+	}
+	else {
+		DrawCrosshair();
+		if (showDebugInfo)
+			DrawDebugInfo(player.GetPosition(), player.GetBlockCoordinates(), player.GetChunkCoordinates());
+	}
+
+	if (!pressedKey && glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
+		pressedKey = GLFW_KEY_F1;
+		showDebugInfo = !showDebugInfo;
+	}
+
+	if (pressedKey == GLFW_KEY_F1 && glfwGetKey(window, GLFW_KEY_F1) == GLFW_RELEASE) {
+		pressedKey = false;
+	}
+
+	if (!pressedKey && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
+		pressedKey = GLFW_KEY_TAB;
+		blockMenuActive = !blockMenuActive;
+		player.GetPlayerCamera()->SetControlsActive(!blockMenuActive);
+		if (blockMenuActive)
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		else
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+
+	if (pressedKey == GLFW_KEY_TAB && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE) {
+		pressedKey = false;
+	}
 }
 
 void UserInterface::Draw() {
 
+}
+
+BlockAtlas::Type UserInterface::DrawBlockMenu() {
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2(400, 200));
+	ImGui::Begin("Block Menu", NULL);
+
+	BlockAtlas blockAtlas;
+	std::map<BlockAtlas::Type, std::string> nameMap = blockAtlas.GetNameMap();
+	std::vector<const char*> names;
+
+	for (auto const& block : nameMap) {
+		names.push_back(block.second.c_str());
+	}
+
+	static int item_current = BlockAtlas::Type::GRASS;
+	ImGui::Text("Selected Block:");
+	ImGui::Combo("", &item_current, &names[0], names.size());
+	ImGui::End();
+
+
+	// Rendering
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	return (BlockAtlas::Type)item_current;
 }
 
 void UserInterface::DrawCrosshair() {
@@ -78,16 +157,9 @@ void UserInterface::DrawDebugInfo(glm::vec3 playerPos, glm::ivec3 playerBlockPos
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	static float f = 0.0f;
-	static int counter = 0;
-
-	ImGuiWindowFlags window_flags = 0;
-	window_flags |= ImGuiWindowFlags_NoBackground;
-	window_flags |= ImGuiWindowFlags_NoTitleBar;
-
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImVec2(1000, 1000));
-	ImGui::Begin("-", (bool*)true, window_flags);                          // Create a window called "Hello, world!" and append into it.
+	ImGui::Begin("-", (bool*)true, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);                          // Create a window called "Hello, world!" and append into it.
 
 	ImGui::Text("Avg frame rate: %.1f FPS", ImGui::GetIO().Framerate);
 	ImGui::Text("Avg frame time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);

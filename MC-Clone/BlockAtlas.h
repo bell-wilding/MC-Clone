@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <string>
+#include <map>
 
 class BlockAtlas {
 public:
@@ -47,9 +48,11 @@ public:
 	BlockAtlas();
 	~BlockAtlas();
 
+	std::map<Type, std::string>& GetNameMap() { return nameMap; }
+
 	std::vector<float> GetBlockVertexArray(BlockAtlas::Type type);
 
-	std::string GetTypeName(Type type) { return names[type]; }
+	std::string GetTypeName(Type type) { return nameMap[type]; }
 
 	BlockUV GetBlockUVs(Type blockType);
 
@@ -58,7 +61,7 @@ protected:
 	std::map<Type, std::vector<float>> vaMap;
 	std::map<Type, BlockUV> uvMap;
 
-	std::string names[21];
+	std::map<Type, std::string> nameMap;
 
 };
 

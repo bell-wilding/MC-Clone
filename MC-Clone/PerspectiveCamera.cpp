@@ -29,9 +29,11 @@ PerspectiveCamera::~PerspectiveCamera() {
 }
 
 void PerspectiveCamera::Update(float dt) {
+
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
+
 	if (controlsActive) {
-		double x, y;
-		glfwGetCursorPos(window, &x, &y);
 
 		glm::vec2 relativePos(x - prevX, y - prevY);
 
@@ -87,6 +89,10 @@ void PerspectiveCamera::Update(float dt) {
 		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			position.y -= moveSpeed * dt;
 		}
+	}
+	else {
+		prevX = x;
+		prevY = y;
 	}
 }
 

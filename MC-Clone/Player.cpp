@@ -22,6 +22,9 @@ Player::Player(PerspectiveCamera* cam) : camera(cam) {
 
 void Player::Update(float dt, GLFWwindow* window, World* world, Renderer& renderer) {
 
+	camera->Update(dt);
+
+	position = camera->GetPosition();
 	chunkCoordinates = glm::ivec2(camera->GetPosition().x / 16, camera->GetPosition().z / 16);
 	blockCoordinates = glm::ivec3(std::round(camera->GetPosition().x), std::round(camera->GetPosition().y), std::round(camera->GetPosition().z));
 

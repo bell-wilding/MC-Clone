@@ -5,7 +5,7 @@
 World::World(int seed, int initDimensions) {
 	noise = new FastNoiseLite(seed);
 	noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-	noise->SetFrequency(0.01f);
+	noise->SetFrequency(0.005f);
 
 	worldExtents.x = initDimensions / 2 - initDimensions;
 	worldExtents.y = initDimensions / 2;
@@ -43,6 +43,9 @@ World::~World() {
 	}
 }
 
+void World::Update() {
+}
+
 Chunk* World::GetChunkAtPosition(glm::ivec2 chunkPosition) {
 	return chunkMap[chunkPosition];
 }
@@ -54,7 +57,8 @@ void World::PlaceBlock(glm::ivec3 position, BlockAtlas::Type type) {
 	Chunk* c = chunkMap[chunkCoords];
 	if (c) {
 		c->GetBlockAtPosition(blockCoords).type = type;
-		c->GetBlockAtPosition(blockCoords).isTransparent = type == BlockAtlas::Type::LEAF || BlockAtlas::Type::WINDOW;
+		c->GetBlockAtPosition(blockCoords).isTransparent = type == BlockAtlas::Type::LEAF || type == BlockAtlas::Type::WINDOW || type == BlockAtlas::Type::TALL_GRASS || type == BlockAtlas::Type::RED_FLOWER || type == BlockAtlas::Type::YELLOW_FLOWER || type == BlockAtlas::Type::SAPLING || type == BlockAtlas::Type::RED_MUSHROOM || type == BlockAtlas::Type::BROWN_MUSHROOM;
+		c->GetBlockAtPosition(blockCoords).isFauna = type == BlockAtlas::Type::TALL_GRASS|| type == BlockAtlas::Type::RED_FLOWER || type == BlockAtlas::Type::YELLOW_FLOWER || type == BlockAtlas::Type::SAPLING || type == BlockAtlas::Type::RED_MUSHROOM || type == BlockAtlas::Type::BROWN_MUSHROOM;
 		c->CreateMesh(blockAtlas, chunkMap);
 
 		if (chunkMap[glm::vec2(chunkCoords.x + 1, chunkCoords.y)])
@@ -97,6 +101,7 @@ void World::DestroyBlock(glm::ivec3 position) {
 }
 
 BlockAtlas::Block World::GetBlockAtPosition(glm::ivec3 position) {
+	if (position.y < 0 || position.y > 255) return BlockAtlas::Block{ BlockAtlas::Type::AIR };
 	glm::ivec2 chunkCoords(std::floor(position.x / 16.0f), std::floor(position.z / 16.0f));
 	glm::ivec2 chunkBlockCoords(position.x % 16, position.z % 16);
 	glm::ivec3 blockCoords((chunkBlockCoords.x < 0 ? 16 + chunkBlockCoords.x : chunkBlockCoords.x), position.y, chunkBlockCoords.y < 0 ? 16 + chunkBlockCoords.y : chunkBlockCoords.y);

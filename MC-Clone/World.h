@@ -13,6 +13,8 @@ public:
 	World(int seed, int initDimensions);
 	~World();
 
+	void Update();
+
 	Chunk* GetChunkAtPosition(glm::ivec2 chunkPosition);
 	BlockAtlas::Block GetBlockAtPosition(glm::ivec3 position);
 

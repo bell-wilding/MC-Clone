@@ -64,18 +64,12 @@ int main(void) {
 	if (!window)
 		return -1;
 
-	bool showUI = false;
-	bool keyHeld = false;
-
 	World* world = new World(3, 10);
 	PerspectiveCamera* cam = new PerspectiveCamera(window, glm::vec3(0, 130, 0), -80, 0.1f, 1000, 0, 0);
 	Renderer renderer(cam, window, world);
 	Player player(cam);
 	Statistics stats;
 	UserInterface ui(window);
-
-	bool canBreak = true;
-	bool canPlace = true;
 
 	float prevTime = 0, currentTime = 0, dt = 0;
 
@@ -87,29 +81,11 @@ int main(void) {
 		dt = currentTime - prevTime;
 
 		stats.Update(dt);
-		cam->Update(dt);
-		player.Update(dt, window, world, renderer);
+		player.Update(dt, window, world, renderer);		
 
 		renderer.RenderFrame();
 
-		ui.DrawCrosshair();
-
-		if (showUI)
-			ui.DrawDebugInfo(cam->GetPosition(), player.GetBlockCoordinates(), player.GetChunkCoordinates());
-
-		if (!keyHeld && glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
-			keyHeld = true;
-			showUI = !showUI;
-			/*cam->SetControlsActive(!showUI);
-			if (showUI)
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			else
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);*/
-		}
-
-		if (keyHeld && glfwGetKey(window, GLFW_KEY_F1) == GLFW_RELEASE) {
-			keyHeld = false;
-		}
+		ui.Update(player);
 
 		renderer.EndFrame();
 	}

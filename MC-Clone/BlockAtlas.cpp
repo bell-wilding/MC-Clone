@@ -2,6 +2,7 @@
 
 BlockAtlas::BlockAtlas() {
 
+	uvMap[BlockAtlas::Type::AIR]			= { glm::vec2(14, 10), glm::vec2(14, 10), glm::vec2(14, 10) };
 	uvMap[BlockAtlas::Type::GRASS]			= { glm::vec2(1, 16), glm::vec2(3, 16), glm::vec2(4, 16) };
 	uvMap[BlockAtlas::Type::OAK_LOG]		= { glm::vec2(6, 15), glm::vec2(6, 15), glm::vec2(5, 15) };
 	uvMap[BlockAtlas::Type::BIRCH_LOG]		= { glm::vec2(6, 15), glm::vec2(6, 15), glm::vec2(6, 9) };
@@ -9,6 +10,7 @@ BlockAtlas::BlockAtlas() {
 	uvMap[BlockAtlas::Type::WOOD_PLANK]		= { glm::vec2(5, 16), glm::vec2(5, 16), glm::vec2(5, 16) };
 	uvMap[BlockAtlas::Type::LEAF]			= { glm::vec2(5, 13), glm::vec2(5, 13), glm::vec2(5, 13) };
 	uvMap[BlockAtlas::Type::STONE]			= { glm::vec2(2, 16), glm::vec2(2, 16), glm::vec2(2, 16) };
+	uvMap[BlockAtlas::Type::SAND]			= { glm::vec2(3, 15), glm::vec2(3, 15), glm::vec2(3, 15) };
 	uvMap[BlockAtlas::Type::DIRT]			= { glm::vec2(3, 16), glm::vec2(3, 16), glm::vec2(3, 16) };
 	uvMap[BlockAtlas::Type::BEDROCK]		= { glm::vec2(2, 15), glm::vec2(2, 15), glm::vec2(2, 15) };
 	uvMap[BlockAtlas::Type::WINDOW]			= { glm::vec2(2, 13), glm::vec2(2, 13), glm::vec2(2, 13) };
@@ -22,25 +24,27 @@ BlockAtlas::BlockAtlas() {
 	uvMap[BlockAtlas::Type::WATER_TOP]		= { glm::vec2(14, 4), glm::vec2(14, 10), glm::vec2(14, 10) };
 	uvMap[BlockAtlas::Type::WATER]			= { glm::vec2(14, 10), glm::vec2(14, 10), glm::vec2(14, 10) };
 
-	names[0] = "Air";
-	names[1] = "Grass";
-	names[2] = "Stone";
-	names[3] = "Dirt";
-	names[4] = "Wood Plank";
-	names[5] = "Oak Log";
-	names[6] = "Birch Log";
-	names[7] = "Leaf";
-	names[8] = "Sand";
-	names[9] = "Cobblestone";
-	names[10] = "Bedrock";
-	names[11] = "Window";
-	names[12] = "Tall Grass";
-	names[13] = "Red Glower";
-	names[14] = "Yellow Flower";
-	names[15] = "Sapling";
-	names[16] = "Red Mushroom";
-	names[17] = "Brown Mushroom";
-	names[18] = "Sad Cowboy";
+	nameMap[BlockAtlas::Type::AIR]				= "Air";
+	nameMap[BlockAtlas::Type::GRASS]			= "Grass";
+	nameMap[BlockAtlas::Type::STONE]			= "Stone";
+	nameMap[BlockAtlas::Type::DIRT]				= "Dirt";
+	nameMap[BlockAtlas::Type::WOOD_PLANK]		= "Wood Plank";
+	nameMap[BlockAtlas::Type::OAK_LOG]			= "Oak Log";
+	nameMap[BlockAtlas::Type::BIRCH_LOG]		= "Birch Log";
+	nameMap[BlockAtlas::Type::LEAF]				= "Leaf";
+	nameMap[BlockAtlas::Type::SAND]				= "Sand";
+	nameMap[BlockAtlas::Type::COBBLESTONE]		= "Cobblestone";
+	nameMap[BlockAtlas::Type::BEDROCK]			= "Bedrock";
+	nameMap[BlockAtlas::Type::WINDOW]			= "Window";
+	nameMap[BlockAtlas::Type::TALL_GRASS]		= "Tall Grass";
+	nameMap[BlockAtlas::Type::RED_FLOWER]		= "Red Glower";
+	nameMap[BlockAtlas::Type::YELLOW_FLOWER]	= "Yellow Flower";
+	nameMap[BlockAtlas::Type::SAPLING]			= "Sapling";
+	nameMap[BlockAtlas::Type::RED_MUSHROOM]		= "Red Mushroom";
+	nameMap[BlockAtlas::Type::BROWN_MUSHROOM]	= "Brown Mushroom";
+	nameMap[BlockAtlas::Type::SAD_COWBOY]		= "Sad Cowboy";
+	nameMap[BlockAtlas::Type::WATER_TOP]		= "Water Top";
+	nameMap[BlockAtlas::Type::WATER]			= "Water";
 
 	for (const auto &uvInfo: uvMap) {
 

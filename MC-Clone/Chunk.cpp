@@ -473,6 +473,7 @@ void Chunk::PlaceTree(int x, int y, int z) {
 	blockData[x][topPos][z-1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z - 1), true };
 
 	topPos--;
+	blockData[x][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z), true };
 	blockData[x + 1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x + 1, centerPosition.y + topPos, centerPosition.z + z), true };
 	blockData[x - 1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x - 1, centerPosition.y + topPos, centerPosition.z + z), true };
 	blockData[x][topPos][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z + 1), true };
