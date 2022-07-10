@@ -32,6 +32,7 @@ in vec3 v_FragPos;
 in vec3 v_Normal;
 
 uniform vec4 u_Colour = vec4(1, 1, 1, 1);
+uniform vec4 u_FogColour = vec4(0.41, 0.64, 1, 1);
 uniform sampler2D u_Texture;
 
 uniform vec3 u_CamPos;
@@ -41,7 +42,6 @@ uniform vec3 u_LightDir;
 void main() {
 	float fogMaxDist = 500;
 	float fogMinDist = 400;
-	vec4 fogColour = vec4(0.41, 0.64, 1, 1);
 	float dist = length(u_CamPos - v_FragPos);
 	float fogFactor = (fogMaxDist - dist) / (fogMaxDist - fogMinDist);
 	fogFactor = clamp(fogFactor, 0.0, 1.0);
@@ -54,7 +54,7 @@ void main() {
 	vec4 diffuse = vec4(0.4, 0.4, 0.4, 1.0) * diff * texColour * u_Colour;
 
 	colour = ambient + diffuse;
-	colour = mix(fogColour, colour, fogFactor);
+	colour = mix(u_FogColour, colour, fogFactor);
 
 	/*if (v_TexCoord.x - floor(v_TexCoord.x) < 0.0075 || v_TexCoord.x - floor(v_TexCoord.x) > 0.9925 || v_TexCoord.y - floor(v_TexCoord.y) < 0.0075 || v_TexCoord.y - floor(v_TexCoord.y) > 0.9925) {
 		colour = vec4(0.25, 0.25, 0.25, 1);

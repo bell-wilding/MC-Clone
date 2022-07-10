@@ -6,6 +6,7 @@
 #include "DirectionalLight.h"
 #include "World.h"
 #include "PerspectiveCamera.h"
+#include "Skybox.h"
 
 class Renderer {
 public:
@@ -13,7 +14,7 @@ public:
 	~Renderer() {};
 
 	void BeginFrame();
-	void RenderFrame();
+	void RenderFrame(float dt);
 	void EndFrame();
 
 	void DrawBox(glm::vec3 boxPos, glm::vec3 boxSize);
@@ -25,6 +26,7 @@ protected:
 	LineRenderer lineRenderer;
 
 	DirectionalLight light;
+	Skybox skybox;
 
 	PerspectiveCamera* camera;
 	World* world;

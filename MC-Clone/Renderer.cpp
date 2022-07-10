@@ -19,16 +19,21 @@ void Renderer::BeginFrame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::RenderFrame() {
+void Renderer::RenderFrame(float dt) {
 	glm::mat4 projMat = camera->BuildProjectionMatrix();
 	glm::mat4 viewMat = camera->BuildViewMatrix();
 	glm::mat4 vp = projMat * viewMat;
+
+	skybox.Render(dt, camera);
+
+	//light.RotateDirection(glm::vec3(1, 0, 0), skybox.GetTimeOfDay() * 360);
 
 	chunkShader.Bind();
 	chunkShader.SetUniformMat4f("u_VP", vp);
 	chunkShader.SetUniform3f("u_CamPos", camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
 
 	chunkShader.SetUniform3f("u_LightDir", light.GetLightDirection().x, light.GetLightDirection().y, light.GetLightDirection().z);
+	chunkShader.SetUniform4f("u_FogColour", skybox.GetFogColour().r, skybox.GetFogColour().g, skybox.GetFogColour().b, skybox.GetFogColour().a);
 
 	glm::ivec4 worldExtents = world->GetWorldExtents();
 	for (int x = worldExtents.x; x < worldExtents.y; ++x) {

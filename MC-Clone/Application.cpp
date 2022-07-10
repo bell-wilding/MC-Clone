@@ -71,7 +71,7 @@ int main(void) {
 	Statistics stats;
 	UserInterface ui(window);
 
-	float prevTime = 0, currentTime = 0, dt = 0;
+	float prevTime = (float)glfwGetTime(), currentTime = (float)glfwGetTime(), dt = 0;
 
 	while (!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS) {
 		renderer.BeginFrame();
@@ -83,7 +83,7 @@ int main(void) {
 		stats.Update(dt);
 		player.Update(dt, window, world, renderer);		
 
-		renderer.RenderFrame();
+		renderer.RenderFrame(dt);
 
 		ui.Update(player);
 
