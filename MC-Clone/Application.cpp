@@ -3,24 +3,10 @@
 #include <iostream>
 
 #include "PerspectiveCamera.h"
-#include "BlockAtlas.h"
-#include "Chunk.h"
-#include "Ray.h"
-
 #include "World.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "FastNoiseLite.h"
-#include <map>
-#include <unordered_map>
 #include "Statistics.h"
 #include "Player.h"
 #include "UserInterface.h"
-
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 
 #include "Renderer.h"
 
@@ -64,8 +50,8 @@ int main(void) {
 	if (!window)
 		return -1;
 
-	World* world = new World(3, 10);
-	PerspectiveCamera* cam = new PerspectiveCamera(window, glm::vec3(0, 130, 0), -80, 0.1f, 1000, 0, 0);
+	World* world = new World(3, 20);
+	PerspectiveCamera* cam = new PerspectiveCamera(window, glm::vec3(0, 100, 0), -80, 0.1f, 1000, 0, 0);
 	Renderer renderer(cam, window, world);
 	Player player(cam);
 	Statistics stats;
@@ -80,10 +66,10 @@ int main(void) {
 		currentTime = (float)glfwGetTime();
 		dt = currentTime - prevTime;
 
-		stats.Update(dt);
-		player.Update(dt, window, world, renderer);		
-
 		renderer.RenderFrame(dt);
+
+		stats.Update(dt);
+		player.Update(dt, window, world, renderer);
 
 		ui.Update(player);
 

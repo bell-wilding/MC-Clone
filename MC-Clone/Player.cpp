@@ -91,9 +91,9 @@ BlockAtlas::Block Player::GetNearestBlock(World* world, glm::ivec3& collisionNor
 	Ray::Collision col;
 	BlockAtlas::Block nearestBlock = world->GetBlockAtPosition(blockCoordinates);
 
-	blockCoordinates.y = std::max(10, std::min(blockCoordinates.y, 245));
+	int closestY = std::max(6, std::min(blockCoordinates.y, 249));
 	for (int x = blockCoordinates.x - 6; x < blockCoordinates.x + 7; ++x) {
-		for (int y = blockCoordinates.y - 6; y < blockCoordinates.y + 7; ++y) {
+		for (int y = closestY - 6; y < closestY + 7; ++y) {
 			for (int z = blockCoordinates.z - 6; z < blockCoordinates.z + 7; ++z) {
 				BlockAtlas::Block block = world->GetBlockAtPosition(glm::ivec3(x, y, z));
 				if (block.type != BlockAtlas::Type::AIR && CollisionDetection::RayAABBIntersection(ray, glm::vec3(x, y, z), glm::vec3(0.5, 0.5, 0.5), col)) {

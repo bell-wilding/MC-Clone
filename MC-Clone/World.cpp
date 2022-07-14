@@ -3,9 +3,7 @@
 #include <iostream>
 
 World::World(int seed, int initDimensions) {
-	noise = new FastNoiseLite(seed);
-	noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-	noise->SetFrequency(0.005f);
+	noise = new siv::BasicPerlinNoise<float>(seed);
 
 	worldExtents.x = initDimensions / 2 - initDimensions;
 	worldExtents.y = initDimensions / 2;
@@ -16,8 +14,8 @@ World::World(int seed, int initDimensions) {
 	int i = 0;
 	for (int x = worldExtents.x; x < worldExtents.y; ++x) {
 		for (int z = worldExtents.z; z < worldExtents.w; ++z) {
-			chunkMap[glm::ivec2(x, z)] = new Chunk(glm::vec3(x * 16, 0, z * 16), *noise);
-			chunkMap[glm::ivec2(x, z)]->GenerateChunkData(seed, *noise);
+			chunkMap[glm::ivec2(x, z)] = new Chunk(glm::vec3(x * 16, 0, z * 16));
+			chunkMap[glm::ivec2(x, z)]->GenerateChunkData(seed, noise);
 			chunkMap[glm::ivec2(x, z)]->InitialiseBuffers();
 			++i;
 		}

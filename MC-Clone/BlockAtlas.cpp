@@ -23,6 +23,10 @@ BlockAtlas::BlockAtlas() {
 	uvMap[BlockAtlas::Type::SAD_COWBOY]		= { glm::vec2(14, 9), glm::vec2(14, 9), glm::vec2(14, 9) };
 	uvMap[BlockAtlas::Type::WATER_TOP]		= { glm::vec2(14, 4), glm::vec2(14, 10), glm::vec2(14, 10) };
 	uvMap[BlockAtlas::Type::WATER]			= { glm::vec2(14, 10), glm::vec2(14, 10), glm::vec2(14, 10) };
+	uvMap[BlockAtlas::Type::COAL_ORE]		= { glm::vec2(3, 14), glm::vec2(3, 14), glm::vec2(3, 14) };
+	uvMap[BlockAtlas::Type::IRON_ORE]		= { glm::vec2(2, 14), glm::vec2(2, 14), glm::vec2(2, 14) };
+	uvMap[BlockAtlas::Type::GOLD_ORE]		= { glm::vec2(1, 14), glm::vec2(1, 14), glm::vec2(1, 14) };
+	uvMap[BlockAtlas::Type::DIAMOND_ORE]	= { glm::vec2(3, 13), glm::vec2(3, 13), glm::vec2(3, 13) };
 
 	nameMap[BlockAtlas::Type::AIR]				= "Air";
 	nameMap[BlockAtlas::Type::GRASS]			= "Grass";
@@ -45,6 +49,10 @@ BlockAtlas::BlockAtlas() {
 	nameMap[BlockAtlas::Type::SAD_COWBOY]		= "Sad Cowboy";
 	nameMap[BlockAtlas::Type::WATER_TOP]		= "Water Top";
 	nameMap[BlockAtlas::Type::WATER]			= "Water";
+	nameMap[BlockAtlas::Type::COAL_ORE]			= "Coal Ore";
+	nameMap[BlockAtlas::Type::IRON_ORE]			= "Iron Ore";
+	nameMap[BlockAtlas::Type::GOLD_ORE]			= "Gold Ore";
+	nameMap[BlockAtlas::Type::DIAMOND_ORE]		= "Diamond Ore";
 
 	for (const auto &uvInfo: uvMap) {
 

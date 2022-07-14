@@ -27,7 +27,7 @@ protected:
 
 	std::unordered_map<glm::ivec2, Chunk*> chunkMap;
 	BlockAtlas blockAtlas;
-	FastNoiseLite* noise;
+	siv::BasicPerlinNoise<float>* noise;
 
 	glm::ivec4 worldExtents;
 };
