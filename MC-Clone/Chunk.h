@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 #include "BlockAtlas.h"
-#include "FastNoiseLite.h"
+#include "PerlinNoise.hpp"
 #include <unordered_map>
 
 struct CubeFace {
@@ -13,7 +13,7 @@ struct CubeFace {
 
 class Chunk {
 public:
-	Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin);
+	Chunk(const glm::vec3 centerPos);
 	~Chunk();
 
 	void GetBlocks(BlockAtlas::Block blockData[16][256][16]);
@@ -27,7 +27,7 @@ public:
 
 	void Bind();
 
-	void GenerateChunkData(int seed, FastNoiseLite& perlin);
+	void GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise);
 	void InitialiseBuffers();
 
 	void GenerateMeshData(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Chunk*>& world);
@@ -42,7 +42,7 @@ public:
 protected:
 	glm::vec2 GetUVForVertex(int vertIndex, glm::vec2 uvs);
 
-	void Smoothen(FastNoiseLite& perlin);
+	void Smoothen(siv::BasicPerlinNoise<float>* noise);
 	int GetNumSurroundingSolidBlocks(int x, int y, int z);
 
 	void PlaceTree(int x, int y, int z);

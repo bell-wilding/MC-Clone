@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-Chunk::Chunk(const glm::vec3 centerPos, FastNoiseLite& perlin) : centerPosition(centerPos) {
+Chunk::Chunk(const glm::vec3 centerPos) : centerPosition(centerPos) {
 	chunkCoords = glm::ivec2(centerPos.x / 16, centerPos.z / 16);
 }
 
@@ -309,10 +309,17 @@ glm::vec2 Chunk::GetUVForVertex(int vertIndex, glm::vec2 uvs) {
 	}
 }
 
-void Chunk::Smoothen(FastNoiseLite& perlin) {
+void Chunk::Smoothen(siv::BasicPerlinNoise<float>* noise) {
 	for (int x = 0; x < 16; ++x) {
 		for (int z = 0; z < 16; ++z) {
-			float yPos = (perlin.GetNoise(centerPosition.x + x, centerPosition.z + +z) + 1) * 0.5f * 255;
+			/*perlin.SetFrequency(0.3f);
+			float p1 = (perlin.GetNoise(centerPosition.x + x, centerPosition.z + +z) + 1) * 0.5f;
+			perlin.SetFrequency(0.0225f);
+			float p2 = (perlin.GetNoise(centerPosition.x + x, centerPosition.z + +z) + 1) * 0.5f;
+			perlin.SetFrequency(0.016875f);
+			float p3 = (perlin.GetNoise(centerPosition.x + x, centerPosition.z + +z) + 1) * 0.5;
+
+			float yPos = (p1 + p2 + p3) / 3 * 255;
 			int y = (int)yPos;
 
 			for (int nextY = y - 1; nextY > 0; --nextY) {
@@ -326,7 +333,7 @@ void Chunk::Smoothen(FastNoiseLite& perlin) {
 					numBlocks--;
 				}
 
-			}
+			}*/
 		}
 	}
 }
@@ -352,14 +359,14 @@ int Chunk::GetNumSurroundingSolidBlocks(int x, int y, int z) {
 	return wallCount;
 }
 
-void Chunk::GenerateChunkData(int seed, FastNoiseLite& perlin) {
+void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 
-	float fillAmount = 0.1f;
 	//srand(seed);
 
 	for (int x = 0; x < 16; ++x) {
 		for (int z = 0; z < 16; ++z) {
-			float yPos = (perlin.GetNoise(centerPosition.x + x, centerPosition.z + z) + 1) * 0.5f * 255;
+
+			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.003f, (centerPosition.z + z) * 0.003f, 8) * 255;
 			int y = (int)yPos;
 
 			blockData[x][y][z] = { BlockAtlas::Type::GRASS,  glm::vec3(centerPosition.x + x, centerPosition.y + y, centerPosition.z + z), false };
@@ -370,14 +377,27 @@ void Chunk::GenerateChunkData(int seed, FastNoiseLite& perlin) {
 				if (nextY == 0) {
 					blockData[x][nextY][z] = { BlockAtlas::Type::BEDROCK,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
 				}
-				/*else if ((double)rand() / (RAND_MAX) < fillAmount) {
-					blockData[x][nextY][z] = { BlockAtlas::Type::AIR, glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
-				}*/
 				else if (nextY < y - 1) {
-					blockData[x][nextY][z] = { BlockAtlas::Type::STONE,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+					float val = noise->normalizedOctave3D_01((centerPosition.x + x) * 0.15f, (centerPosition.z + z) * 0.15f, (centerPosition.y + nextY) * 0.15f, 2);
+
+					if (val > 0.775 && nextY < 20) {
+						blockData[x][nextY][z] = { BlockAtlas::Type::DIAMOND_ORE,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+					}
+					else if (val > 0.75 && nextY < 40) {
+						blockData[x][nextY][z] = { BlockAtlas::Type::GOLD_ORE,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+					}
+					else if (val > 0.7 && nextY < 70) {
+						blockData[x][nextY][z] = { BlockAtlas::Type::IRON_ORE,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+					}
+					else if (val > 0.65 && nextY < 100) {
+						blockData[x][nextY][z] = { BlockAtlas::Type::COAL_ORE,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+					}
+					else {
+						blockData[x][nextY][z] = { BlockAtlas::Type::STONE,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+					}
 				}
 				else {
-					blockData[x][nextY][z] = { BlockAtlas::Type::DIRT,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
+					blockData[x][nextY][z] = { (rand() % 2 == 0 ? BlockAtlas::Type::STONE : BlockAtlas::Type::DIRT),  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), false };
 				}
 
 				numBlocks++;
@@ -393,47 +413,85 @@ void Chunk::GenerateChunkData(int seed, FastNoiseLite& perlin) {
 					blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
 				//}
 			}
-
-			float randVal = ((double)rand() / (RAND_MAX));
-
-			if (y != 255) {
-				if (randVal < 0.5) {
-					blockData[x][y + 1][z] = { BlockAtlas::Type::TALL_GRASS,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
-					numBlocks++;
-				}
-				if (randVal < 0.15) {
-					blockData[x][y + 1][z] = { BlockAtlas::Type::RED_FLOWER,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
-				}
-				if (randVal < 0.1) {
-					blockData[x][y + 1][z] = { BlockAtlas::Type::YELLOW_FLOWER,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
-				}
-				if (randVal < 0.05) {
-					blockData[x][y + 1][z] = { BlockAtlas::Type::RED_MUSHROOM,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
-				}
-				if (randVal < 0.03) {
-					blockData[x][y + 1][z] = { BlockAtlas::Type::SAPLING,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
-				}
-				if (randVal < 0.01) {
-					blockData[x][y + 1][z] = { BlockAtlas::Type::BROWN_MUSHROOM,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
-				}
-			}
 		}
 	}
 
-	/*for (int i = 0; i < 1; ++i) {
-		Smoothen(perlin);
-	}*/
+	bool entrance = ((double)rand() / (RAND_MAX)) < 0.025;
 
 	for (int x = 0; x < 16; ++x) {
 		for (int z = 0; z < 16; ++z) {
-			if (((double)rand() / (RAND_MAX)) < 0.02 && x > 2 && x < 14 && z > 2 && z < 14) {
-				float yPos = (perlin.GetNoise(centerPosition.x + x, centerPosition.z + z) + 1) * 0.5f * 255;
-				int y = (int)yPos;
-				PlaceTree(x, y + 1, z);
+			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.003f, (centerPosition.z + z) * 0.003f, 8) * 255;
+			int y = (int)yPos;
+
+			bool destroyBlockAbove = false;
+
+			for (int nextY = entrance ? y : y - 2; nextY > 0; --nextY) {
+				float val = noise->normalizedOctave3D_01((centerPosition.x + x) * 0.0275f, (centerPosition.z + z) * 0.0275f, (centerPosition.y + nextY) * 0.0275f, 3, 0.6);
+				if (nextY <= y - 2) {
+					if (val > 0.46 && val < 0.54) blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+				}
+				else {
+					if (val > 0.485 && val < 0.515) {
+						blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+						destroyBlockAbove = true;
+					}
+				}
+			}
+
+			if (destroyBlockAbove) {
+				for (int nextY = y + 1; nextY < 256; ++nextY) {
+					blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+				}
 			}
 		}
 	}
 
+
+	for (int x = 0; x < 16; ++x) {
+		for (int z = 0; z < 16; ++z) {
+
+			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.003f, (centerPosition.z + z) * 0.003f, 8) * 255;
+			int y = (int)yPos;
+			if (GetBlockAtPosition(glm::ivec3(x, y, z)).type == BlockAtlas::Type::GRASS) {
+				float randVal = ((double)rand() / (RAND_MAX));
+
+				if (y != 255) {
+					if (randVal < 0.5) {
+						blockData[x][y + 1][z] = { BlockAtlas::Type::TALL_GRASS,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+						numBlocks++;
+					}
+					if (randVal < 0.15) {
+						blockData[x][y + 1][z] = { BlockAtlas::Type::RED_FLOWER,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+					}
+					if (randVal < 0.1) {
+						blockData[x][y + 1][z] = { BlockAtlas::Type::YELLOW_FLOWER,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+					}
+					if (randVal < 0.05) {
+						blockData[x][y + 1][z] = { BlockAtlas::Type::RED_MUSHROOM,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+					}
+					if (randVal < 0.03) {
+						blockData[x][y + 1][z] = { BlockAtlas::Type::SAPLING,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+					}
+					if (randVal < 0.01) {
+						blockData[x][y + 1][z] = { BlockAtlas::Type::BROWN_MUSHROOM,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
+					}
+				}
+			}
+		}
+	}
+
+
+	for (int x = 0; x < 16; ++x) {
+		for (int z = 0; z < 16; ++z) {
+			if (((double)rand() / (RAND_MAX)) < 0.01 && x > 2 && x < 14 && z > 2 && z < 14) {
+				float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.003f, (centerPosition.z + z) * 0.003f, 8) * 255;
+				int y = (int)yPos;
+				if (GetBlockAtPosition(glm::ivec3(x, y, z)).type == BlockAtlas::Type::GRASS) {
+					PlaceTree(x, y + 1, z);
+				}
+			}
+		}
+	}
 }
 
 void Chunk::InitialiseBuffers() {

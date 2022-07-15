@@ -29,7 +29,11 @@ public:
 		BROWN_MUSHROOM,
 		SAD_COWBOY,
 		WATER_TOP,
-		WATER
+		WATER,
+		COAL_ORE,
+		IRON_ORE,
+		GOLD_ORE,
+		DIAMOND_ORE
 	};
 
 	struct BlockUV {

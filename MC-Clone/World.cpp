@@ -2,10 +2,8 @@
 
 #include <iostream>
 
-World::World(int seed, glm::vec2 startChunk, int worldDimensions) {
-	noise = new FastNoiseLite(seed);
-	noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-	noise->SetFrequency(0.005f);
+World::World(int seed, int initDimensions) {
+	noise = new siv::BasicPerlinNoise<float>(seed);
 
 	extents = worldDimensions / 2;
 	worldExtents.x = startChunk.x - extents;
@@ -17,8 +15,8 @@ World::World(int seed, glm::vec2 startChunk, int worldDimensions) {
 	int i = 0;
 	for (int x = worldExtents.x; x < worldExtents.y; ++x) {
 		for (int z = worldExtents.z; z < worldExtents.w; ++z) {
-			chunkMap[glm::ivec2(x, z)] = new Chunk(glm::vec3(x * 16, 0, z * 16), *noise);
-			chunkMap[glm::ivec2(x, z)]->GenerateChunkData(seed, *noise);
+			chunkMap[glm::ivec2(x, z)] = new Chunk(glm::vec3(x * 16, 0, z * 16));
+			chunkMap[glm::ivec2(x, z)]->GenerateChunkData(seed, noise);
 			chunkMap[glm::ivec2(x, z)]->InitialiseBuffers();
 			++i;
 		}
