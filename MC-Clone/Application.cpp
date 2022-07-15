@@ -64,8 +64,8 @@ int main(void) {
 	if (!window)
 		return -1;
 
-	World* world = new World(3, 10);
 	PerspectiveCamera* cam = new PerspectiveCamera(window, glm::vec3(0, 130, 0), -80, 0.1f, 1000, 0, 0);
+	World* world = new World(3, glm::ivec2(cam->GetPosition().x / 16, cam->GetPosition().z / 16), 10);
 	Renderer renderer(cam, window, world);
 	Player player(cam);
 	Statistics stats;
@@ -81,10 +81,10 @@ int main(void) {
 		dt = currentTime - prevTime;
 
 		stats.Update(dt);
-		player.Update(dt, window, world, renderer);		
 
 		renderer.RenderFrame(dt);
 
+		player.Update(dt, window, world, renderer);
 		ui.Update(player);
 
 		renderer.EndFrame();

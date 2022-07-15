@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Shader.h"
+#include "Texture.h"
 #include "PerspectiveCamera.h"
 
 class Skybox {
@@ -22,6 +23,7 @@ protected:
 	unsigned int indexBuffer;
 
 	unsigned int skyboxTex;
+	Texture starTex;
 
 	float rotation;
 	float currentDayTime;

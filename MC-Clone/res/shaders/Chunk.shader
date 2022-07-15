@@ -37,21 +37,28 @@ uniform sampler2D u_Texture;
 
 uniform vec3 u_CamPos;
 
-uniform vec3 u_LightDir;
+uniform vec4 u_SunLight;
+uniform vec4 u_MoonLight;
 
 void main() {
-	float fogMaxDist = 500;
-	float fogMinDist = 400;
+	float fogMaxDist = 300;
+	float fogMinDist = 250;
 	float dist = length(u_CamPos - v_FragPos);
 	float fogFactor = (fogMaxDist - dist) / (fogMaxDist - fogMinDist);
 	fogFactor = clamp(fogFactor, 0.0, 1.0);
 
 	vec4 texColour = texture(u_Texture, v_TexCoord / 16);
 
-	vec4 ambient = vec4(0.6, 0.6, 0.6, 1.0) * texColour * u_Colour;
+	if (texColour.a < 0.01) {
+		discard;
+	}
 
-	float diff = max(dot(v_Normal, -u_LightDir), 0.0);
-	vec4 diffuse = vec4(0.4, 0.4, 0.4, 1.0) * diff * texColour * u_Colour;
+	float avg = (u_SunLight.w + u_MoonLight.w) * 0.5;
+	vec4 ambient = vec4(avg, avg, avg, 1.0) * texColour * u_Colour;
+
+	float diffSun = max(dot(v_Normal, -u_SunLight.xyz), 0.0) * u_SunLight.w;
+	float diffMoon = max(dot(v_Normal, -u_MoonLight.xyz), 0.0) * (u_MoonLight.w * 2);
+	vec4 diffuse = vec4(0.5, 0.5, 0.5, 1.0) * (diffSun + diffMoon) * texColour * u_Colour;
 
 	colour = ambient + diffuse;
 	colour = mix(u_FogColour, colour, fogFactor);
@@ -59,9 +66,7 @@ void main() {
 	/*if (v_TexCoord.x - floor(v_TexCoord.x) < 0.0075 || v_TexCoord.x - floor(v_TexCoord.x) > 0.9925 || v_TexCoord.y - floor(v_TexCoord.y) < 0.0075 || v_TexCoord.y - floor(v_TexCoord.y) > 0.9925) {
 		colour = vec4(0.25, 0.25, 0.25, 1);
 	}
-	else*/ if (colour.a < 0.01) {
-		discard;
-	}
+	else*/
 
 	colour.a = texColour.a;
 

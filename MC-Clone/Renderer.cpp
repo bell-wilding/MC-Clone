@@ -1,9 +1,12 @@
 #include "Renderer.h"
 
+#include <iostream>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/gtx/transform.hpp>
 
-Renderer::Renderer(PerspectiveCamera* cam, GLFWwindow* window, World* world) : chunkShader("res/shaders/Chunk.shader"), textureAtlas("res/textures/default_texture.png"), light(glm::vec3(0.5, 1, 0)), camera(cam), world(world), lineRenderer(cam), window(window) {
+Renderer::Renderer(PerspectiveCamera* cam, GLFWwindow* window, World* world) : chunkShader("res/shaders/Chunk.shader"), textureAtlas("res/textures/default_texture.png"), sunLight(glm::vec3(0, -1, 0), 1), moonLight(glm::vec3(0, 1, 0), 0), camera(cam), world(world), lineRenderer(cam), window(window) {
 	glClearColor(0.41f, 0.64f, 1, 1);
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
@@ -26,13 +29,25 @@ void Renderer::RenderFrame(float dt) {
 
 	skybox.Render(dt, camera);
 
-	//light.RotateDirection(glm::vec3(1, 0, 0), skybox.GetTimeOfDay() * 360);
+	glm::vec4 sunRotation = (glm::vec4(sunLight.GetLightDirection(), 1) * glm::rotate(glm::mat4(1), -skybox.GetTimeOfDay() * glm::pi<float>() * 2, glm::vec3(1, 0, 0)));
+	glm::vec4 moonRotation = (glm::vec4(moonLight.GetLightDirection(), 1) * glm::rotate(glm::mat4(1), -skybox.GetTimeOfDay() * glm::pi<float>() * 2, glm::vec3(1, 0, 0)));
 
 	chunkShader.Bind();
 	chunkShader.SetUniformMat4f("u_VP", vp);
 	chunkShader.SetUniform3f("u_CamPos", camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
 
-	chunkShader.SetUniform3f("u_LightDir", light.GetLightDirection().x, light.GetLightDirection().y, light.GetLightDirection().z);
+	float intensity = 0;
+	if (skybox.GetTimeOfDay() > 0.75) {
+		intensity = glm::clamp(1 - ((skybox.GetTimeOfDay() - 0.75) * 8.0), 0.0, 1.0);
+	}
+	else if (skybox.GetTimeOfDay() > 0.2) {
+		intensity = glm::clamp((skybox.GetTimeOfDay() - 0.2) * 8.0, 0.0, 1.0);
+	}
+	sunLight.SetIntensity(intensity);
+	moonLight.SetIntensity((1 - intensity) * 0.3f);
+
+	chunkShader.SetUniform4f("u_SunLight", sunRotation.x, sunRotation.y, sunRotation.z, sunLight.GetLightIntensity());
+	chunkShader.SetUniform4f("u_MoonLight", moonRotation.x, moonRotation.y, moonRotation.z, moonLight.GetLightIntensity());
 	chunkShader.SetUniform4f("u_FogColour", skybox.GetFogColour().r, skybox.GetFogColour().g, skybox.GetFogColour().b, skybox.GetFogColour().a);
 
 	glm::ivec4 worldExtents = world->GetWorldExtents();

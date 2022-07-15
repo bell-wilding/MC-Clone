@@ -10,10 +10,10 @@
 
 class World {
 public:
-	World(int seed, int initDimensions);
+	World(int seed, glm::vec2 startChunk, int worldDimensions);
 	~World();
 
-	void Update();
+	void Update(glm::vec2 playerChunk);
 
 	Chunk* GetChunkAtPosition(glm::ivec2 chunkPosition);
 	BlockAtlas::Block GetBlockAtPosition(glm::ivec3 position);
@@ -30,4 +30,6 @@ protected:
 	FastNoiseLite* noise;
 
 	glm::ivec4 worldExtents;
+
+	int extents;
 };

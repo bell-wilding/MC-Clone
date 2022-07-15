@@ -4,7 +4,9 @@
 #include "stb_image.h"
 #include <GL/glew.h>
 
-Skybox::Skybox() : shader("res/shaders/Skybox.shader") {
+Skybox::Skybox() : shader("res/shaders/Skybox.shader"), starTex("res/textures/skyboxStars.png") {
+
+	starTex.Unbind();
 
 	float vertices[] = {
 		-1.0f,  1.0f, -1.0f,
@@ -56,17 +58,22 @@ Skybox::Skybox() : shader("res/shaders/Skybox.shader") {
 	for (int i = 0; i < 6; ++i) {
 		images[i].m_LocalBuffer = stbi_load(filenames[i].c_str(), &images[i].m_Width, &images[i].m_Height, &images[i].m_BPP, 4);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8, images[i].m_Width, images[i].m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i].m_LocalBuffer);
+		stbi_image_free(images[i].m_LocalBuffer);
 	}
 
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	rotation = 0;
-	currentDayTime = 15;
 	dayLengthInSeconds = 30;
+	currentDayTime = dayLengthInSeconds * 0.5f;
 }
 
 Skybox::~Skybox() {
@@ -87,7 +94,10 @@ void Skybox::Render(float dt, PerspectiveCamera* camera) {
 
 	shader.Bind();
 
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
+
+	//starTex.Bind(1);
 
 	currentDayTime += dt;
 	float timeOfDayFraction = currentDayTime / dayLengthInSeconds;
@@ -96,14 +106,22 @@ void Skybox::Render(float dt, PerspectiveCamera* camera) {
 		currentDayTime = 0;
 
 	glm::vec4 skyColour(0.545f, 0.741f, 1.0f, 1.0f);
-	float t = (timeOfDayFraction > 0.5 ? (timeOfDayFraction - 0.5) * 2 : 1 - timeOfDayFraction * 2) * 0.9;
-	fogColour = glm::mix(glm::pow(skyColour, glm::vec4(2.2f)), glm::vec4(0.023, 0.05, 0.101, 1), t);
+	float t = 1.0;
+	if (timeOfDayFraction > 0.75) {
+		t = glm::clamp((timeOfDayFraction - 0.75) * 8.0, 0.0, 1.0);
+	}
+	else if (timeOfDayFraction > 0.25) {
+		t = glm::clamp(1 - ((timeOfDayFraction - 0.25) * 8.0), 0.0, 1.0);
+	}
+
+	fogColour = glm::mix(skyColour, glm::vec4(0, 0, 0, 1), t * 0.8f);
 
 	shader.SetUniformMat4f("u_ViewMat", viewMat);
 	shader.SetUniformMat4f("u_ProjMat", projMat);
 	shader.SetUniformMat4f("u_RotationMat", glm::rotate(glm::mat4(1), rotation, glm::vec3(1, 0, 0)));
-	shader.SetUniform1f("u_TimeOfDay", currentDayTime / dayLengthInSeconds);
+	shader.SetUniform1f("u_TimeOfDay", timeOfDayFraction);
 	shader.SetUniform1i("u_SkyTex", 0);
+	//shader.SetUniform1i("u_StarTex", 1);
 
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);

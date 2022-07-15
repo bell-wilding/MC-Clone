@@ -25,7 +25,8 @@ protected:
 
 	LineRenderer lineRenderer;
 
-	DirectionalLight light;
+	DirectionalLight sunLight;
+	DirectionalLight moonLight;
 	Skybox skybox;
 
 	PerspectiveCamera* camera;

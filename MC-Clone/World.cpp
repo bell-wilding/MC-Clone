@@ -2,16 +2,17 @@
 
 #include <iostream>
 
-World::World(int seed, int initDimensions) {
+World::World(int seed, glm::vec2 startChunk, int worldDimensions) {
 	noise = new FastNoiseLite(seed);
 	noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 	noise->SetFrequency(0.005f);
 
-	worldExtents.x = initDimensions / 2 - initDimensions;
-	worldExtents.y = initDimensions / 2;
+	extents = worldDimensions / 2;
+	worldExtents.x = startChunk.x - extents;
+	worldExtents.y = startChunk.x + extents;
 	// Same number of chunks on X and Z axis initially
-	worldExtents.z = worldExtents.x; 
-	worldExtents.w = worldExtents.y;
+	worldExtents.z = startChunk.y - extents;
+	worldExtents.w = startChunk.y + extents;
 
 	int i = 0;
 	for (int x = worldExtents.x; x < worldExtents.y; ++x) {
@@ -43,7 +44,8 @@ World::~World() {
 	}
 }
 
-void World::Update() {
+void World::Update(glm::vec2 playerChunk) {
+
 }
 
 Chunk* World::GetChunkAtPosition(glm::ivec2 chunkPosition) {
