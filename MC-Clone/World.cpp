@@ -5,12 +5,11 @@
 World::World(int seed, int initDimensions) {
 	noise = new siv::BasicPerlinNoise<float>(seed);
 
-	extents = worldDimensions / 2;
-	worldExtents.x = startChunk.x - extents;
-	worldExtents.y = startChunk.x + extents;
+	worldExtents.x = initDimensions / 2 - initDimensions;
+	worldExtents.y = initDimensions / 2;
 	// Same number of chunks on X and Z axis initially
-	worldExtents.z = startChunk.y - extents;
-	worldExtents.w = startChunk.y + extents;
+	worldExtents.z = worldExtents.x;
+	worldExtents.w = worldExtents.y;
 
 	int i = 0;
 	for (int x = worldExtents.x; x < worldExtents.y; ++x) {

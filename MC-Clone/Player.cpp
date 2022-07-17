@@ -10,19 +10,29 @@
 
 #include <algorithm>
 
-Player::Player(PerspectiveCamera* cam) : camera(cam) {
+Player::Player(PerspectiveCamera* cam) : camera(cam), camOffset(glm::vec3(0, 1, 0)), rigidbody(cam->GetPosition() - camOffset) {
 	chunkCoordinates = glm::ivec2((camera->GetPosition().x - 8) / 16, (camera->GetPosition().z - 8) / 16);
 	blockCoordinates = glm::ivec3(std::round(camera->GetPosition().x), std::round(camera->GetPosition().y), std::round(camera->GetPosition().z));
 
 	activeBlockType = BlockAtlas::Type::GRASS;
 
+	movementSpeed = 500;
+
 	canBreakBlock = true;
 	canPlaceBlock = true;
+
+	increaseSpeed = false;
+
+	setHZ = 120;
+	setDT = 1.0f / setHZ;
+	dtOffset = 0;
 }
 
 void Player::Update(float dt, GLFWwindow* window, World* world, Renderer& renderer) {
 
 	camera->Update(dt);
+
+	ApplyPhysics(window, dt);
 
 	position = camera->GetPosition();
 	chunkCoordinates = glm::ivec2(camera->GetPosition().x / 16, camera->GetPosition().z / 16);
@@ -82,6 +92,55 @@ void Player::ChangeActiveBlockType(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) {
 		activeBlockType = BlockAtlas::SAD_COWBOY;
 	}
+}
+
+void Player::ApplyPhysics(GLFWwindow* window, float dt) {
+
+
+	if (!increaseSpeed && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		increaseSpeed = true;
+		movementSpeed *= 4;
+	}
+
+	if (increaseSpeed && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+		increaseSpeed = false;
+		movementSpeed /= 4;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		rigidbody.AddForce(camera->ForwardVector() * movementSpeed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		rigidbody.AddForce(camera->ForwardVector() * -movementSpeed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		rigidbody.AddForce(camera->RightVector() * movementSpeed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		rigidbody.AddForce(camera->RightVector() * -movementSpeed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		rigidbody.AddForce(camera->UpVector() * movementSpeed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		rigidbody.AddForce(camera->UpVector() * -movementSpeed);
+	}
+
+	dtOffset += dt;
+	
+	while (dtOffset >= setDT) {
+
+		rigidbody.IntegrateAcceleration(setDT);
+
+		rigidbody.IntegrateVelocity(setDT);
+
+		dtOffset -= setDT;
+	}
+
+	rigidbody.ClearForce();
+
+	camera->SetPosition(rigidbody.GetPosition() + camOffset);
+
 }
 
 BlockAtlas::Block Player::GetNearestBlock(World* world, glm::ivec3& collisionNormal) {

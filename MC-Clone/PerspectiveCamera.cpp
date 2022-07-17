@@ -52,7 +52,7 @@ void PerspectiveCamera::Update(float dt) {
 		if (yaw > 360.0f)
 			yaw -= 360.0f;
 
-		if (!increaseSpeed && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		/*if (!increaseSpeed && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 			increaseSpeed = true;
 			moveSpeed *= 4;
 		}
@@ -88,7 +88,7 @@ void PerspectiveCamera::Update(float dt) {
 		}
 		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			position.y -= moveSpeed * dt;
-		}
+		}*/
 	}
 	else {
 		prevX = x;
@@ -113,4 +113,12 @@ glm::mat4 PerspectiveCamera::BuildProjectionMatrix() {
 
 glm::vec3 PerspectiveCamera::ForwardVector() {
 	return glm::vec3(-viewMatrix[0][2], -viewMatrix[1][2], -viewMatrix[2][2]);
+}
+
+glm::vec3 PerspectiveCamera::RightVector() {
+	return glm::vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+}
+
+glm::vec3 PerspectiveCamera::UpVector() {
+	return glm::vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
 }

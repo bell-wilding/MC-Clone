@@ -111,6 +111,9 @@
     <ClCompile Include="Skybox.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Rigidbody.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="PerlinNoise.hpp">
       <Filter>Vendor\Noise</Filter>
+    </ClInclude>
+    <ClInclude Include="Rigidbody.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

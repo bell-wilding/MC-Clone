@@ -10,7 +10,7 @@
 
 class World {
 public:
-	World(int seed, glm::vec2 startChunk, int worldDimensions);
+	World(int seed, int worldDimensions);
 	~World();
 
 	void Update(glm::vec2 playerChunk);

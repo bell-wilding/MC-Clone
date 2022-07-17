@@ -15,6 +15,8 @@ public:
 	glm::mat4 BuildProjectionMatrix();
 
 	glm::vec3 ForwardVector();
+	glm::vec3 RightVector();
+	glm::vec3 UpVector();
 
 	glm::vec3 GetPosition() const { return position; }
 

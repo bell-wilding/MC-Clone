@@ -2,6 +2,7 @@
 
 #include "PerspectiveCamera.h"
 #include "BlockAtlas.h"
+#include "Rigidbody.h"
 
 struct GLFWwindow;
 class World;
@@ -28,9 +29,15 @@ public:
 
 protected:
 
+	Rigidbody rigidbody;
+
+	glm::vec3 camOffset;
+
 	void HandleBlockInteraction(GLFWwindow* window, World* world, Renderer& renderer);
 
 	void ChangeActiveBlockType(GLFWwindow* window);
+
+	void ApplyPhysics(GLFWwindow* window, float dt);
 
 	BlockAtlas::Block GetNearestBlock(World* world, glm::ivec3& collisionNormal);
 
@@ -38,9 +45,16 @@ protected:
 
 	bool canBreakBlock, canPlaceBlock;
 
+	bool increaseSpeed;
+	float movementSpeed;
+
 	PerspectiveCamera* camera;
 
 	glm::vec3 position;
 	glm::ivec2 chunkCoordinates;
 	glm::ivec3 blockCoordinates;
+
+	int setHZ;
+	float setDT;
+	float dtOffset;
 };

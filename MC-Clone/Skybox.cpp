@@ -72,7 +72,7 @@ Skybox::Skybox() : shader("res/shaders/Skybox.shader"), starTex("res/textures/sk
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	rotation = 0;
-	dayLengthInSeconds = 30;
+	dayLengthInSeconds = 240;
 	currentDayTime = dayLengthInSeconds * 0.5f;
 }
 

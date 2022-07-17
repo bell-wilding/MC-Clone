@@ -41,8 +41,8 @@ uniform vec4 u_SunLight;
 uniform vec4 u_MoonLight;
 
 void main() {
-	float fogMaxDist = 300;
-	float fogMinDist = 250;
+	float fogMaxDist = 350;
+	float fogMinDist = 275;
 	float dist = length(u_CamPos - v_FragPos);
 	float fogFactor = (fogMaxDist - dist) / (fogMaxDist - fogMinDist);
 	fogFactor = clamp(fogFactor, 0.0, 1.0);

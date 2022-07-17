@@ -416,7 +416,8 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 		}
 	}
 
-	bool entrance = ((double)rand() / (RAND_MAX)) < 0.025;
+	float rVal = ((double)rand() / (RAND_MAX));
+	bool entrance = rVal < 0.5;
 
 	for (int x = 0; x < 16; ++x) {
 		for (int z = 0; z < 16; ++z) {
@@ -426,12 +427,22 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 			bool destroyBlockAbove = false;
 
 			for (int nextY = entrance ? y : y - 2; nextY > 0; --nextY) {
-				float val = noise->normalizedOctave3D_01((centerPosition.x + x) * 0.0275f, (centerPosition.z + z) * 0.0275f, (centerPosition.y + nextY) * 0.0275f, 3, 0.6);
+				/*float val = noise->normalizedOctave3D_01((centerPosition.x + x) * 0.025f, (centerPosition.z + z) * 0.025f, (centerPosition.y + nextY) * 0.03f, 4, 0.75);
 				if (nextY <= y - 2) {
-					if (val > 0.46 && val < 0.54) blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+					if (val < 0.41|| val > 0.59) blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
 				}
 				else {
-					if (val > 0.485 && val < 0.515) {
+					if (val < 0.3 || val > 0.7) {
+						blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+						destroyBlockAbove = true;
+					}
+				}*/
+				float val = noise->normalizedOctave3D_01((centerPosition.x + x) * 0.008f, (centerPosition.z + z) * 0.008f, (centerPosition.y + nextY) * 0.009f, 5, 5.0);
+				if (nextY <= y - 2) {
+					if (val < 0.43 || val > 0.57) blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
+				}
+				else {
+					if (val < 0.3 || val > 0.7) {
 						blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
 						destroyBlockAbove = true;
 					}
