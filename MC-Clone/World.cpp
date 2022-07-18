@@ -2,8 +2,10 @@
 
 #include <iostream>
 
-World::World(int seed, int initDimensions) {
+World::World(int seed, int initDimensions) : seed(seed) {
 	noise = new siv::BasicPerlinNoise<float>(seed);
+
+	activeDimensions = initDimensions;
 
 	worldExtents.x = initDimensions / 2 - initDimensions;
 	worldExtents.y = initDimensions / 2;
@@ -42,7 +44,34 @@ World::~World() {
 }
 
 void World::Update(glm::vec2 playerChunk) {
+	worldExtents.x = playerChunk.x - activeDimensions / 2;
+	worldExtents.y = playerChunk.x + activeDimensions / 2;
+	// Same number of chunks on X and Z axis initially
+	worldExtents.z = playerChunk.y - activeDimensions / 2;
+	worldExtents.w = playerChunk.y + activeDimensions / 2;
 
+	int i = 0;
+	for (int x = worldExtents.x; x < worldExtents.y; ++x) {
+		for (int z = worldExtents.z; z < worldExtents.w; ++z) {
+			if (!chunkMap[glm::ivec2(x, z)]) {
+				chunkMap[glm::ivec2(x, z)] = new Chunk(glm::vec3(x * 16, 0, z * 16));
+				chunkMap[glm::ivec2(x, z)]->GenerateChunkData(seed, noise);
+				chunkMap[glm::ivec2(x, z)]->InitialiseBuffers();
+				++i;
+			}
+		}
+	}
+
+	i = 0;
+	for (int x = worldExtents.x; x < worldExtents.y; ++x) {
+		for (int z = worldExtents.z; z < worldExtents.w; ++z) {
+			if (!chunkMap[glm::ivec2(x, z)]->HasMesh()) {
+				chunkMap[glm::ivec2(x, z)]->CreateMesh(blockAtlas, chunkMap);
+				++i;
+				std::cout << "Chunks Generated: " << i << std::endl;
+			}
+		}
+	}
 }
 
 Chunk* World::GetChunkAtPosition(glm::ivec2 chunkPosition) {

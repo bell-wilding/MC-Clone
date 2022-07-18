@@ -27,6 +27,16 @@ BlockAtlas::BlockAtlas() {
 	uvMap[BlockAtlas::Type::IRON_ORE]		= { glm::vec2(2, 14), glm::vec2(2, 14), glm::vec2(2, 14) };
 	uvMap[BlockAtlas::Type::GOLD_ORE]		= { glm::vec2(1, 14), glm::vec2(1, 14), glm::vec2(1, 14) };
 	uvMap[BlockAtlas::Type::DIAMOND_ORE]	= { glm::vec2(3, 13), glm::vec2(3, 13), glm::vec2(3, 13) };
+	uvMap[BlockAtlas::Type::BREAK_1]		= { glm::vec2(1, 1), glm::vec2(1, 1), glm::vec2(1, 1) };
+	uvMap[BlockAtlas::Type::BREAK_2]		= { glm::vec2(2, 1), glm::vec2(2, 1), glm::vec2(2, 1) };
+	uvMap[BlockAtlas::Type::BREAK_3]		= { glm::vec2(3, 1), glm::vec2(3, 1), glm::vec2(3, 1) };
+	uvMap[BlockAtlas::Type::BREAK_4]		= { glm::vec2(4, 1), glm::vec2(4, 1), glm::vec2(4, 1) };
+	uvMap[BlockAtlas::Type::BREAK_5]		= { glm::vec2(5, 1), glm::vec2(5, 1), glm::vec2(5, 1) };
+	uvMap[BlockAtlas::Type::BREAK_6]		= { glm::vec2(6, 1), glm::vec2(6, 1), glm::vec2(6, 1) };
+	uvMap[BlockAtlas::Type::BREAK_7]		= { glm::vec2(7, 1), glm::vec2(7, 1), glm::vec2(7, 1) };
+	uvMap[BlockAtlas::Type::BREAK_8]		= { glm::vec2(8, 1), glm::vec2(8, 1), glm::vec2(8, 1) };
+	uvMap[BlockAtlas::Type::BREAK_9]		= { glm::vec2(9, 1), glm::vec2(9, 1), glm::vec2(9, 1) };
+	uvMap[BlockAtlas::Type::BREAK_10]		= { glm::vec2(10, 1), glm::vec2(10, 1), glm::vec2(10, 1) };
 
 	nameMap[BlockAtlas::Type::AIR]				= "Air";
 	nameMap[BlockAtlas::Type::GRASS]			= "Grass";
@@ -53,6 +63,16 @@ BlockAtlas::BlockAtlas() {
 	nameMap[BlockAtlas::Type::IRON_ORE]			= "Iron Ore";
 	nameMap[BlockAtlas::Type::GOLD_ORE]			= "Gold Ore";
 	nameMap[BlockAtlas::Type::DIAMOND_ORE]		= "Diamond Ore";
+	nameMap[BlockAtlas::Type::BREAK_1]			= "Break 1";
+	nameMap[BlockAtlas::Type::BREAK_2]			= "Break 2";
+	nameMap[BlockAtlas::Type::BREAK_3]			= "Break 3";
+	nameMap[BlockAtlas::Type::BREAK_4]			= "Break 4";
+	nameMap[BlockAtlas::Type::BREAK_5]			= "Break 5";
+	nameMap[BlockAtlas::Type::BREAK_6]			= "Break 6";
+	nameMap[BlockAtlas::Type::BREAK_7]			= "Break 7";
+	nameMap[BlockAtlas::Type::BREAK_8]			= "Break 8";
+	nameMap[BlockAtlas::Type::BREAK_9]			= "Break 9";
+	nameMap[BlockAtlas::Type::BREAK_10]			= "Break 10";
 
 	for (const auto &uvInfo: uvMap) {
 

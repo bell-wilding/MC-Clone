@@ -288,6 +288,8 @@ void Chunk::BufferData() {
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+	hasMesh = true;
 }
 
 BlockAtlas::Block& Chunk::GetBlockAtPosition(glm::ivec3 position) {
@@ -547,8 +549,8 @@ void Chunk::PlaceTree(int x, int y, int z) {
 	blockData[x - 1][topPos][z] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x - 1, centerPosition.y + topPos, centerPosition.z + z), true };
 	blockData[x][topPos][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z + 1), true };
 	blockData[x][topPos][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z - 1), true };
-	blockData[x + 1][topPos][z+1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x + 1, centerPosition.y + topPos, centerPosition.z + z), true };
-	blockData[x - 1][topPos][z-1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x - 1, centerPosition.y + topPos, centerPosition.z + z), true };
+	blockData[x + 1][topPos][z+1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x + 1, centerPosition.y + topPos, centerPosition.z + z + 1), true };
+	blockData[x - 1][topPos][z-1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x - 1, centerPosition.y + topPos, centerPosition.z + z - 1), true };
 	blockData[x-1][topPos][z + 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z + 1), true };
 	blockData[x+1][topPos][z - 1] = { BlockAtlas::Type::LEAF,  glm::vec3(centerPosition.x + x, centerPosition.y + topPos, centerPosition.z + z - 1), true };
 

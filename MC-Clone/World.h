@@ -30,6 +30,9 @@ protected:
 	siv::BasicPerlinNoise<float>* noise;
 
 	glm::ivec4 worldExtents;
+	int activeDimensions;
+
+	int seed;
 
 	int extents;
 };

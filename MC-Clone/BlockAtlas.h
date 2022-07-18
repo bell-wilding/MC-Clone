@@ -33,7 +33,17 @@ public:
 		COAL_ORE,
 		IRON_ORE,
 		GOLD_ORE,
-		DIAMOND_ORE
+		DIAMOND_ORE,
+		BREAK_1,
+		BREAK_2,
+		BREAK_3,
+		BREAK_4,
+		BREAK_5,
+		BREAK_6,
+		BREAK_7,
+		BREAK_8,
+		BREAK_9,
+		BREAK_10
 	};
 
 	struct BlockUV {

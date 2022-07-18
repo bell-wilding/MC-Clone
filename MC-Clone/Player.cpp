@@ -20,12 +20,16 @@ Player::Player(PerspectiveCamera* cam, Input* input) : camera(cam), input(input)
 
 	boxCollider = AABB(glm::vec3(0.25f, 0.9f, 0.25f), glm::vec3(0, 0.35f, 0));
 
-	walkSpeed = 75;
+	walkSpeed = 60;
 	flySpeed = 500;
-	jumpVelocity = 12.5f;
-	jumpCooldown = 0.4f;
+	jumpVelocity = 11.0f;
+	jumpCooldown = 0.5f;
 	jumpCooldownTimer = 0.0f;
 	movementSpeed = walkSpeed;
+
+	breakBlockDuration = 1;
+	breakBlockTimer = 0;
+	instantBreak = false;
 
 	canBreakBlock = true;
 	canPlaceBlock = true;
@@ -45,6 +49,8 @@ void Player::Update(float dt, World* world, Renderer& renderer) {
 	blockCoordinates = glm::ivec3(std::round(camera->GetPosition().x), std::round(camera->GetPosition().y), std::round(camera->GetPosition().z));
 
 	jumpCooldownTimer += dt;
+	if (breakingBlock)
+		breakBlockTimer += dt;
 
 	camera->Update(dt);
 	ApplyPhysics(world, dt);
@@ -66,6 +72,10 @@ void Player::ToggleFlyingCamMode(bool flyingCam) {
 void Player::UpdateKeys() {
 	if (input->GetKeyPressed(Input::KeyVal::X)) {
 		ToggleFlyingCamMode(!flyingCamMode);
+	}
+
+	if (input->GetKeyPressed(Input::KeyVal::B)) {
+		instantBreak = !instantBreak;
 	}
 
 	if (flyingCamMode && !increaseSpeed && input->GetKeyDown(Input::KeyVal::SPACE)) {
@@ -117,8 +127,31 @@ void Player::HandleBlockInteraction(World* world, Renderer& renderer) {
 	BlockAtlas::Block block = GetNearestBlock(world, collisionNormal);
 
 	if (block.type != BlockAtlas::Type::AIR) {
-		renderer.DrawBox(block.position, glm::vec3(0.502, 0.502, 0.502));
-		if (canBreakBlock && input->GetMouseButtonDown(Input::MouseButton::LEFT)) {
+		if (input->GetMouseButtonDown(Input::MouseButton::LEFT)) {
+			if (instantBreak && canBreakBlock) {
+				breakingBlock = false;
+				breakBlockTimer = 0;
+				world->DestroyBlock(block.position);
+				canBreakBlock = false;
+			}
+			else {
+				breakingBlock = true;
+				if (breakingBlockPosition != glm::ivec3(block.position)) {
+					breakBlockTimer = 0;
+				}
+				breakingBlockPosition = block.position;
+			}
+		}
+
+		if (breakingBlock) {
+			std::cout << breakBlockTimer / breakBlockDuration * 10 << std::endl;
+			int breakTexture = (int)BlockAtlas::Type::BREAK_1 + (int)((breakBlockTimer / breakBlockDuration * 10));
+			std::cout << breakTexture << std::endl;
+			renderer.RenderBlock((BlockAtlas::Type)breakTexture, block.position);
+		}
+		if (breakingBlock && breakBlockTimer >= breakBlockDuration) {
+			breakingBlock = false;
+			breakBlockTimer = 0;
 			world->DestroyBlock(block.position);
 			canBreakBlock = false;
 		}
@@ -126,9 +159,12 @@ void Player::HandleBlockInteraction(World* world, Renderer& renderer) {
 			world->PlaceBlock((glm::ivec3)block.position + collisionNormal, activeBlockType);
 			canPlaceBlock = false;
 		}
+		renderer.DrawBox(block.position, glm::vec3(0.502, 0.502, 0.502));
 	}
 
 	if (!input->GetMouseButtonDown(Input::MouseButton::LEFT)) {
+		breakBlockTimer = 0;
+		breakingBlock = false;
 		canBreakBlock = true;
 	}
 

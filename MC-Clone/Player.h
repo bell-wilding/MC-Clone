@@ -54,8 +54,6 @@ protected:
 
 	BlockAtlas::Type activeBlockType;
 
-	bool canBreakBlock, canPlaceBlock;
-
 	bool grounded;
 	float jumpVelocity;
 	float jumpCooldown;
@@ -85,4 +83,11 @@ protected:
 	Input* input;
 
 	bool flyingCamMode;
+
+	float breakBlockDuration;
+	float breakBlockTimer;
+	bool instantBreak;
+
+	bool canBreakBlock, canPlaceBlock, breakingBlock;
+	glm::ivec3 breakingBlockPosition;
 };

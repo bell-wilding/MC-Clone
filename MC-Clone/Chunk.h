@@ -39,6 +39,8 @@ public:
 
 	BlockAtlas::Block& GetBlockAtPosition(glm::ivec3 position);
 
+	bool HasMesh() { return hasMesh; }
+
 protected:
 	glm::vec2 GetUVForVertex(int vertIndex, glm::vec2 uvs);
 
@@ -61,5 +63,7 @@ protected:
 	unsigned int vao;
 	unsigned int vertexBuffer;
 	unsigned int indexBuffer;
+
+	bool hasMesh;
 };
 

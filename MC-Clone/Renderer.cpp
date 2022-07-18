@@ -67,6 +67,10 @@ void Renderer::EndFrame() {
 	glfwPollEvents();
 }
 
+void Renderer::RenderBlock(BlockAtlas::Type type, glm::ivec3 position) {
+	blockRenderer.DrawBlock(type, position);
+}
+
 void Renderer::DrawBox(glm::vec3 boxPos, glm::vec3 boxSize, glm::vec4 colour) {
 
 	glm::vec3 vertices[8] = {
