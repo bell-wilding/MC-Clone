@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Input.h"
 #include "PerspectiveCamera.h"
 #include "BlockAtlas.h"
 #include "Rigidbody.h"
+#include "AABB.h"
+#include "CollisionDetection.h"
 
 struct GLFWwindow;
 class World;
@@ -10,34 +13,42 @@ class Renderer;
 
 class Player {
 public:
-	Player(PerspectiveCamera* cam);
+	Player(PerspectiveCamera* cam, Input* input);
 	~Player() {};
 
-	void Update(float dt, GLFWwindow* window, World* world, Renderer& renderer);
+	void Update(float dt, World* world, Renderer& renderer);
 
 	void ChangeActiveBlockType(BlockAtlas::Type newType) { activeBlockType = newType; }
 	BlockAtlas::Type GetActiveBlockType() { return activeBlockType; }
 
 	glm::ivec2 GetChunkCoordinates() { return chunkCoordinates; }
 	glm::ivec3 GetBlockCoordinates() { return blockCoordinates; }
-	glm::vec3 GetPosition() { return position; }
+	glm::vec3 GetPosition() { return rigidbody.GetPosition(); }
 
 	PerspectiveCamera* GetPlayerCamera() { return camera; }
 
 	void SetCanBreakBlock(bool canBreak) { canBreakBlock = canBreak; }
 	void SetCanPlaceBlock(bool canPlace) { canPlaceBlock = canPlace; }
 
+	void ToggleFlyingCamMode(bool flyingCam);
+
 protected:
 
 	Rigidbody rigidbody;
 
-	glm::vec3 camOffset;
+	void UpdateKeys();
 
-	void HandleBlockInteraction(GLFWwindow* window, World* world, Renderer& renderer);
+	void HandleBlockInteraction(World* world, Renderer& renderer);
 
-	void ChangeActiveBlockType(GLFWwindow* window);
+	void ChangeActiveBlockType();
 
-	void ApplyPhysics(GLFWwindow* window, float dt);
+	void ApplyPhysics(World* world, float dt);
+
+	void CollisionDetection(World* world);
+
+	void ImpulseCollisionResolution(CollisionDetection::ContactPoint& point);
+
+	void Jump();
 
 	BlockAtlas::Block GetNearestBlock(World* world, glm::ivec3& collisionNormal);
 
@@ -45,16 +56,33 @@ protected:
 
 	bool canBreakBlock, canPlaceBlock;
 
+	bool grounded;
+	float jumpVelocity;
+	float jumpCooldown;
+	float jumpCooldownTimer;
+
 	bool increaseSpeed;
+	bool decreaseSpped;
 	float movementSpeed;
 
-	PerspectiveCamera* camera;
+	float walkSpeed;
+	float flySpeed;
 
-	glm::vec3 position;
+	PerspectiveCamera* camera;
+	glm::vec3 camOffset;
+
 	glm::ivec2 chunkCoordinates;
 	glm::ivec3 blockCoordinates;
 
 	int setHZ;
 	float setDT;
 	float dtOffset;
+
+	bool collisionsEnabled;
+
+	AABB boxCollider;
+
+	Input* input;
+
+	bool flyingCamMode;
 };

@@ -114,6 +114,9 @@
     <ClCompile Include="Rigidbody.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">
@@ -197,15 +200,24 @@
     <ClInclude Include="Rigidbody.h">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Print.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\Chunk.shader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Line.shader">
+    <None Include="res\shaders\Skybox.shader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="res\shaders\Skybox.shader">
+    <None Include="res\shaders\Line.shader">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

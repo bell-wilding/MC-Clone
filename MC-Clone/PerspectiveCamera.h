@@ -1,12 +1,10 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
-struct GLFWwindow;
+#include "Input.h"
 
 class PerspectiveCamera {
 public:
-	PerspectiveCamera(GLFWwindow* window, const glm::vec3& pos, float fov, float nPlane, float fPlane, float pitch, float yaw);
+	PerspectiveCamera(Input* input, const glm::vec3& pos, float fov, float nPlane, float fPlane, float pitch, float yaw);
 	~PerspectiveCamera();
 
 	void Update(float dt);
@@ -38,9 +36,9 @@ protected:
 
 	float fieldOfView;
 
-	GLFWwindow* window;
+	Input* input;
 
-	double prevX, prevY;
+	glm::vec2 prevCursorPos;
 
 	float moveSpeed;
 	float turnSensitivity;

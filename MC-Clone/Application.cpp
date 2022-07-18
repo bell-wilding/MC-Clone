@@ -2,13 +2,13 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include "Statistics.h"
+#include "Input.h"
 #include "PerspectiveCamera.h"
 #include "World.h"
-#include "Statistics.h"
-#include "Player.h"
-#include "UserInterface.h"
-
 #include "Renderer.h"
+#include "UserInterface.h"
+#include "Player.h"
 
 GLFWwindow* InitWindow() {
 	GLFWwindow* window;
@@ -51,16 +51,19 @@ int main(void) {
 		return -1;
 
 	World* world = new World(3, 20);
-	PerspectiveCamera* cam = new PerspectiveCamera(window, glm::vec3(0, 100, 0), -80, 0.1f, 1000, 0, 0);
+	Input* input = new Input(window);
+	PerspectiveCamera* cam = new PerspectiveCamera(input, glm::vec3(0, 100, 0), -80, 0.1f, 1000, 0, 0);
 	Renderer renderer(cam, window, world);
-	Player player(cam);
+	Player player(cam, input);
 	Statistics stats;
-	UserInterface ui(window);
+	UserInterface ui(window, input);
 
 	float prevTime = (float)glfwGetTime(), currentTime = (float)glfwGetTime(), dt = 0;
 
-	while (!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS) {
+	while (!glfwWindowShouldClose(window) && !input->GetKeyPressed(Input::KeyVal::ESCAPE)) {
 		renderer.BeginFrame();
+
+		input->Update();
 
 		prevTime = currentTime;
 		currentTime = (float)glfwGetTime();
@@ -70,7 +73,7 @@ int main(void) {
 
 		renderer.RenderFrame(dt);
 
-		player.Update(dt, window, world, renderer);
+		player.Update(dt, world, renderer);
 		ui.Update(player);
 
 		renderer.EndFrame();

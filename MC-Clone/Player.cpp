@@ -4,19 +4,28 @@
 
 #include "Player.h"
 
+#include "Renderer.h"
+
 #include "Ray.h"
-#include "CollisionDetection.h"
 #include "World.h"
+#include <iostream>
 
 #include <algorithm>
 
-Player::Player(PerspectiveCamera* cam) : camera(cam), camOffset(glm::vec3(0, 1, 0)), rigidbody(cam->GetPosition() - camOffset) {
+Player::Player(PerspectiveCamera* cam, Input* input) : camera(cam), input(input), camOffset(glm::vec3(0, 1, 0)), rigidbody(cam->GetPosition() - camOffset) {
 	chunkCoordinates = glm::ivec2((camera->GetPosition().x - 8) / 16, (camera->GetPosition().z - 8) / 16);
 	blockCoordinates = glm::ivec3(std::round(camera->GetPosition().x), std::round(camera->GetPosition().y), std::round(camera->GetPosition().z));
 
 	activeBlockType = BlockAtlas::Type::GRASS;
 
-	movementSpeed = 500;
+	boxCollider = AABB(glm::vec3(0.25f, 0.9f, 0.25f), glm::vec3(0, 0.35f, 0));
+
+	walkSpeed = 75;
+	flySpeed = 500;
+	jumpVelocity = 12.5f;
+	jumpCooldown = 0.4f;
+	jumpCooldownTimer = 0.0f;
+	movementSpeed = walkSpeed;
 
 	canBreakBlock = true;
 	canPlaceBlock = true;
@@ -26,111 +35,150 @@ Player::Player(PerspectiveCamera* cam) : camera(cam), camOffset(glm::vec3(0, 1, 
 	setHZ = 120;
 	setDT = 1.0f / setHZ;
 	dtOffset = 0;
+
+	flyingCamMode = false;
+	collisionsEnabled = true;
 }
 
-void Player::Update(float dt, GLFWwindow* window, World* world, Renderer& renderer) {
-
-	camera->Update(dt);
-
-	ApplyPhysics(window, dt);
-
-	position = camera->GetPosition();
+void Player::Update(float dt, World* world, Renderer& renderer) {
 	chunkCoordinates = glm::ivec2(camera->GetPosition().x / 16, camera->GetPosition().z / 16);
 	blockCoordinates = glm::ivec3(std::round(camera->GetPosition().x), std::round(camera->GetPosition().y), std::round(camera->GetPosition().z));
 
-	ChangeActiveBlockType(window);
-	HandleBlockInteraction(window, world, renderer);
+	jumpCooldownTimer += dt;
+
+	camera->Update(dt);
+	ApplyPhysics(world, dt);
+
+	UpdateKeys();
+
+	ChangeActiveBlockType();
+	HandleBlockInteraction(world, renderer);
 }
 
-void Player::HandleBlockInteraction(GLFWwindow* window, World* world, Renderer& renderer) {
+void Player::ToggleFlyingCamMode(bool flyingCam) {
+	flyingCamMode = flyingCam;
+	rigidbody.SetApplyGravity(!flyingCam);
+	movementSpeed = flyingCam ? flySpeed : walkSpeed;
+	collisionsEnabled = !flyingCam;
+	rigidbody.SetDamping(glm::vec3(0.925f, flyingCam ? 0.925f : 0.999999f, 0.925f));
+}
+
+void Player::UpdateKeys() {
+	if (input->GetKeyPressed(Input::KeyVal::X)) {
+		ToggleFlyingCamMode(!flyingCamMode);
+	}
+
+	if (flyingCamMode && !increaseSpeed && input->GetKeyDown(Input::KeyVal::SPACE)) {
+		increaseSpeed = true;
+		movementSpeed *= 4;
+	}
+
+	if (flyingCamMode && increaseSpeed && !input->GetKeyDown(Input::KeyVal::SPACE)) {
+		increaseSpeed = false;
+		movementSpeed /= 4;
+	}
+
+
+	if (!flyingCamMode && !decreaseSpped && input->GetKeyDown(Input::KeyVal::LEFT_SHIFT)) {
+		decreaseSpped = true;
+		movementSpeed /= 4;
+		camOffset -= glm::vec3(0, 0.4f, 0);
+	}
+
+	if (!flyingCamMode && decreaseSpped && !input->GetKeyDown(Input::KeyVal::LEFT_SHIFT)) {
+		decreaseSpped = false;
+		movementSpeed *= 4;
+		camOffset += glm::vec3(0, 0.4f, 0);
+	}
+
+	if (input->GetKeyDown(Input::KeyVal::W)) {
+		rigidbody.AddForce(camera->ForwardVector() * glm::vec3(1, (flyingCamMode ? 1 : 0), 1) * movementSpeed);
+	}
+	if (input->GetKeyDown(Input::KeyVal::S)) {
+		rigidbody.AddForce(camera->ForwardVector() * glm::vec3(1, (flyingCamMode ? 1 : 0), 1) * -movementSpeed);
+	}
+	if (input->GetKeyDown(Input::KeyVal::D)) {
+		rigidbody.AddForce(camera->RightVector() * movementSpeed);
+	}
+	if (input->GetKeyDown(Input::KeyVal::A)) {
+		rigidbody.AddForce(camera->RightVector() * -movementSpeed);
+	}
+	if (flyingCamMode && input->GetKeyDown(Input::KeyVal::LEFT_SHIFT)) {
+		rigidbody.AddForce(glm::vec3(0, 1, 0) * movementSpeed);
+	}
+	if (flyingCamMode && input->GetKeyDown(Input::KeyVal::LEFT_CONTROL)) {
+		rigidbody.AddForce(glm::vec3(0, -1, 0) * movementSpeed);
+	}
+
+}
+
+void Player::HandleBlockInteraction(World* world, Renderer& renderer) {
 	glm::ivec3 collisionNormal;
 	BlockAtlas::Block block = GetNearestBlock(world, collisionNormal);
 
 	if (block.type != BlockAtlas::Type::AIR) {
 		renderer.DrawBox(block.position, glm::vec3(0.502, 0.502, 0.502));
-		if (canBreakBlock && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		if (canBreakBlock && input->GetMouseButtonDown(Input::MouseButton::LEFT)) {
 			world->DestroyBlock(block.position);
 			canBreakBlock = false;
 		}
-		if (canPlaceBlock && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		if (canPlaceBlock && input->GetMouseButtonDown(Input::MouseButton::RIGHT)) {
 			world->PlaceBlock((glm::ivec3)block.position + collisionNormal, activeBlockType);
 			canPlaceBlock = false;
 		}
 	}
 
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+	if (!input->GetMouseButtonDown(Input::MouseButton::LEFT)) {
 		canBreakBlock = true;
 	}
 
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+	if (!input->GetMouseButtonDown(Input::MouseButton::RIGHT)) {
 		canPlaceBlock = true;
 	}
 }
 
-void Player::ChangeActiveBlockType(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+void Player::ChangeActiveBlockType() {
+	if (input->GetKeyPressed(Input::KeyVal::ONE)) {
 		activeBlockType = BlockAtlas::GRASS;
 	}
-	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+	if (input->GetKeyPressed(Input::KeyVal::TWO)) {
 		activeBlockType = BlockAtlas::DIRT;
 	}
-	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
+	if (input->GetKeyPressed(Input::KeyVal::THREE)) {
 		activeBlockType = BlockAtlas::STONE;
 	}
-	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
+	if (input->GetKeyPressed(Input::KeyVal::FOUR)) {
 		activeBlockType = BlockAtlas::OAK_LOG;
 	}
-	if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) {
+	if (input->GetKeyPressed(Input::KeyVal::FIVE)) {
 		activeBlockType = BlockAtlas::LEAF;
 	}
-	if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) {
+	if (input->GetKeyPressed(Input::KeyVal::SIX)) {
 		activeBlockType = BlockAtlas::WOOD_PLANK;
 	}
-	if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) {
+	if (input->GetKeyPressed(Input::KeyVal::SEVEN)) {
 		activeBlockType = BlockAtlas::WINDOW;
 	}
-	if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) {
-		activeBlockType = BlockAtlas::SAD_COWBOY;
+	if (input->GetKeyPressed(Input::KeyVal::EIGHT)) {
+		activeBlockType = BlockAtlas::COBBLESTONE;
+	}
+	if (input->GetKeyPressed(Input::KeyVal::NINE)) {
+		activeBlockType = BlockAtlas::SAND;
 	}
 }
 
-void Player::ApplyPhysics(GLFWwindow* window, float dt) {
-
-
-	if (!increaseSpeed && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		increaseSpeed = true;
-		movementSpeed *= 4;
-	}
-
-	if (increaseSpeed && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-		increaseSpeed = false;
-		movementSpeed /= 4;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		rigidbody.AddForce(camera->ForwardVector() * movementSpeed);
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		rigidbody.AddForce(camera->ForwardVector() * -movementSpeed);
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		rigidbody.AddForce(camera->RightVector() * movementSpeed);
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		rigidbody.AddForce(camera->RightVector() * -movementSpeed);
-	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-		rigidbody.AddForce(camera->UpVector() * movementSpeed);
-	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		rigidbody.AddForce(camera->UpVector() * -movementSpeed);
-	}
+void Player::ApplyPhysics(World* world, float dt) {
 
 	dtOffset += dt;
 	
 	while (dtOffset >= setDT) {
 
 		rigidbody.IntegrateAcceleration(setDT);
+
+		if (collisionsEnabled)
+			CollisionDetection(world);
+
+		Jump();
 
 		rigidbody.IntegrateVelocity(setDT);
 
@@ -142,6 +190,78 @@ void Player::ApplyPhysics(GLFWwindow* window, float dt) {
 	camera->SetPosition(rigidbody.GetPosition() + camOffset);
 
 }
+
+void Player::CollisionDetection(World* world) {
+
+	glm::ivec3 checkPositions[] = {
+		// Top
+		glm::ivec3(0, -2, 0),
+		glm::ivec3(1, -2, 0),
+		glm::ivec3(0, -2, -1),
+		glm::ivec3(-1, -2, 0),
+		glm::ivec3(0, -2, 1),
+
+		// Bottom
+		glm::ivec3(0, 1, 0),
+		glm::ivec3(1, 1, 0),
+		glm::ivec3(0, 1, -1),
+		glm::ivec3(-1, 1, 0),
+		glm::ivec3(0, 1, 1),
+
+		// Lower Middle
+		glm::ivec3(1, -1, 0),
+		glm::ivec3(0, -1, -1),
+		glm::ivec3(-1, -1, 0),
+		glm::ivec3(0, -1, 1),
+
+		// Higher Middle
+		glm::ivec3(1, 0, 0),
+		glm::ivec3(0, 0, -1),
+		glm::ivec3(-1, 0, 0),
+		glm::ivec3(0, 0, 1),
+	};
+
+	CollisionDetection::ContactPoint contactPoint;
+
+	for (int i = 0; i < 18; ++i) {
+		BlockAtlas::Block collidingBlock = world->GetBlockAtPosition(blockCoordinates + checkPositions[i]);
+
+		if (!collidingBlock.isFauna 
+			&& collidingBlock.type != BlockAtlas::AIR 
+			&& CollisionDetection::AABBIntersection(boxCollider, rigidbody.GetPosition(), AABB(), blockCoordinates + checkPositions[i], contactPoint)) {
+			
+			ImpulseCollisionResolution(contactPoint);
+
+			if (i <= 5) {
+				grounded = true;
+			}
+		}
+	}
+}
+
+ void Player::ImpulseCollisionResolution(CollisionDetection::ContactPoint& point) {
+
+	if (rigidbody.GetInverseMass() == 0) {
+		return;
+	}
+
+	rigidbody.SetPosition(rigidbody.GetPosition() - point.normal * point.penetration);
+
+	point.normal *= -1;
+	float impulseForce = glm::dot(rigidbody.GetLinearVelocity(), point.normal);
+	float j = (1.0f + rigidbody.GetElasticity()) * impulseForce / rigidbody.GetInverseMass();
+	glm::vec3 fullImpulse = point.normal * j;
+
+	rigidbody.SetLinearVelocity(rigidbody.GetLinearVelocity() - fullImpulse);
+}
+
+ void Player::Jump() {
+	 if (grounded && jumpCooldownTimer > jumpCooldown && !flyingCamMode && input->GetKeyDown(Input::KeyVal::SPACE)) {
+		 rigidbody.ApplyLinearImpulse(glm::vec3(0, 1, 0) * jumpVelocity);
+		 jumpCooldownTimer = 0;
+		 grounded = false;
+	 }
+ }
 
 BlockAtlas::Block Player::GetNearestBlock(World* world, glm::ivec3& collisionNormal) {
 	Ray ray(camera->GetPosition(), camera->ForwardVector());

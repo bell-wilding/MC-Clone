@@ -1,10 +1,11 @@
 #include "Rigidbody.h"
 
 Rigidbody::Rigidbody(glm::vec3 position) : position(position) {
-	gravity = glm::vec3(0, -30, 0);
+	gravity = glm::vec3(0, -45, 0);
 	inverseMass = 1.0f;
-	damping = 0.935f;
-	applyGravity = false;
+	damping = glm::vec3(0.925f, 0.9999999999f, 0.925f);
+	applyGravity = true;
+	elasticity = 0.175f;
 }
 
 void Rigidbody::IntegrateAcceleration(float dt) {

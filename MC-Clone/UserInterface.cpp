@@ -10,7 +10,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-UserInterface::UserInterface(GLFWwindow* window) : window(window) {
+UserInterface::UserInterface(GLFWwindow* window, Input* input) : input(input) {
 
 	const char* glsl_version = "#version 130";
 
@@ -33,7 +33,7 @@ UserInterface::UserInterface(GLFWwindow* window) : window(window) {
 
 	showDebugInfo = false;
 	blockMenuActive = false;
-	pressedKey = false;
+
 	selectedBlockType = BlockAtlas::Type::GRASS;
 }
 
@@ -51,7 +51,7 @@ void UserInterface::Update(Player& player) {
 		player.ChangeActiveBlockType(DrawBlockMenu());
 		if (player.GetActiveBlockType() != selectedBlockType) {
 			player.GetPlayerCamera()->SetControlsActive(true);
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			input->ShowCursor(false);
 			blockMenuActive = false;
 		}
 		selectedBlockType = player.GetActiveBlockType();
@@ -62,27 +62,17 @@ void UserInterface::Update(Player& player) {
 			DrawDebugInfo(player.GetPosition(), player.GetBlockCoordinates(), player.GetChunkCoordinates());
 	}
 
-	if (!pressedKey && glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
-		pressedKey = GLFW_KEY_F1;
+	if (input->GetKeyPressed(Input::KeyVal::F1)) {
 		showDebugInfo = !showDebugInfo;
 	}
 
-	if (pressedKey == GLFW_KEY_F1 && glfwGetKey(window, GLFW_KEY_F1) == GLFW_RELEASE) {
-		pressedKey = false;
-	}
-
-	if (!pressedKey && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
-		pressedKey = GLFW_KEY_TAB;
+	if (input->GetKeyPressed(Input::KeyVal::TAB)) {
 		blockMenuActive = !blockMenuActive;
 		player.GetPlayerCamera()->SetControlsActive(!blockMenuActive);
 		if (blockMenuActive)
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			input->ShowCursor(true);
 		else
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	}
-
-	if (pressedKey == GLFW_KEY_TAB && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE) {
-		pressedKey = false;
+			input->ShowCursor(false);
 	}
 }
 

@@ -1,8 +1,9 @@
-#include "Skybox.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include "stb_image.h"
 #include <GL/glew.h>
+
+#include "Skybox.h"
 
 Skybox::Skybox() : shader("res/shaders/Skybox.shader"), starTex("res/textures/skyboxStars.png") {
 

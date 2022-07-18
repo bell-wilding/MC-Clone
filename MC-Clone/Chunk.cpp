@@ -417,7 +417,7 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 	}
 
 	float rVal = ((double)rand() / (RAND_MAX));
-	bool entrance = rVal < 0.5;
+	bool entrance = rVal < 0.025;
 
 	for (int x = 0; x < 16; ++x) {
 		for (int z = 0; z < 16; ++z) {
@@ -442,7 +442,7 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 					if (val < 0.43 || val > 0.57) blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
 				}
 				else {
-					if (val < 0.3 || val > 0.7) {
+					if (val < 0.35 || val > 0.65) {
 						blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
 						destroyBlockAbove = true;
 					}

@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Skybox.h"
+#include "World.h"
+#include "PerspectiveCamera.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "LineRenderer.h"
 #include "DirectionalLight.h"
-#include "World.h"
-#include "PerspectiveCamera.h"
-#include "Skybox.h"
 
 class Renderer {
 public:
@@ -17,7 +17,7 @@ public:
 	void RenderFrame(float dt);
 	void EndFrame();
 
-	void DrawBox(glm::vec3 boxPos, glm::vec3 boxSize);
+	void DrawBox(glm::vec3 boxPos, glm::vec3 boxSize, glm::vec4 colour = glm::vec4(1, 1, 1, 1));
 
 protected:
 	Shader chunkShader;

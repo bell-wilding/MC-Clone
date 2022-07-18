@@ -1,10 +1,10 @@
-#include "Renderer.h"
 
 #include <iostream>
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <glm/gtx/transform.hpp>
+
+#include "Renderer.h"
 
 Renderer::Renderer(PerspectiveCamera* cam, GLFWwindow* window, World* world) : chunkShader("res/shaders/Chunk.shader"), textureAtlas("res/textures/default_texture.png"), sunLight(glm::vec3(0, -1, 0), 1), moonLight(glm::vec3(0, 1, 0), 0), camera(cam), world(world), lineRenderer(cam), window(window) {
 	glClearColor(0.41f, 0.64f, 1, 1);
@@ -67,7 +67,7 @@ void Renderer::EndFrame() {
 	glfwPollEvents();
 }
 
-void Renderer::DrawBox(glm::vec3 boxPos, glm::vec3 boxSize) {
+void Renderer::DrawBox(glm::vec3 boxPos, glm::vec3 boxSize, glm::vec4 colour) {
 
 	glm::vec3 vertices[8] = {
 		boxPos + boxSize * glm::vec3(1, 1, 1),

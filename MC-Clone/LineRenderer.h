@@ -9,7 +9,7 @@ public:
 	LineRenderer(PerspectiveCamera* cam);
 	~LineRenderer();
 
-	void DrawLine(glm::vec3 startPos, glm::vec3 endPos);
+	void DrawLine(glm::vec3 startPos, glm::vec3 endPos, glm::vec4 colour = glm::vec4(1, 1, 1, 1));
 
 protected:
 	unsigned int vao, vbo;

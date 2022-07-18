@@ -9,7 +9,7 @@ struct GLFWwindow;
 
 class UserInterface {
 public:
-	UserInterface(GLFWwindow* window);
+	UserInterface(GLFWwindow* window, Input* input);
 	~UserInterface();
 
 	void Update(Player& player);
@@ -20,10 +20,9 @@ public:
 	void DrawDebugInfo(glm::vec3 playerPos, glm::ivec3 playerBlockPos, glm::ivec2 playerChunkPos);
 
 protected:
-	GLFWwindow* window;
+	Input* input;
 
 	bool showDebugInfo;
 	bool blockMenuActive;
-	int pressedKey;
 	BlockAtlas::Type selectedBlockType;
 };
