@@ -22,7 +22,7 @@ GLFWwindow* InitWindow() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(1920, 1080, "MC-Clone", NULL, NULL);
+	window = glfwCreateWindow(1280, 720, "MC-Clone", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		return nullptr;

@@ -5,6 +5,7 @@
 #include "Player.h"
 
 #include "Renderer.h"
+#include "Print.h"
 
 #include "Ray.h"
 #include "World.h"
@@ -22,7 +23,7 @@ Player::Player(PerspectiveCamera* cam, Input* input) : camera(cam), input(input)
 
 	walkSpeed = 60;
 	flySpeed = 500;
-	jumpVelocity = 11.0f;
+	jumpVelocity = 12.0f;
 	jumpCooldown = 0.5f;
 	jumpCooldownTimer = 0.0f;
 	movementSpeed = walkSpeed;
@@ -36,7 +37,7 @@ Player::Player(PerspectiveCamera* cam, Input* input) : camera(cam), input(input)
 
 	increaseSpeed = false;
 
-	setHZ = 120;
+	setHZ = 60;
 	setDT = 1.0f / setHZ;
 	dtOffset = 0;
 
@@ -52,8 +53,8 @@ void Player::Update(float dt, World* world, Renderer& renderer) {
 	if (breakingBlock)
 		breakBlockTimer += dt;
 
-	camera->Update(dt);
 	ApplyPhysics(world, dt);
+	camera->Update(dt);
 
 	UpdateKeys();
 
@@ -66,7 +67,7 @@ void Player::ToggleFlyingCamMode(bool flyingCam) {
 	rigidbody.SetApplyGravity(!flyingCam);
 	movementSpeed = flyingCam ? flySpeed : walkSpeed;
 	collisionsEnabled = !flyingCam;
-	rigidbody.SetDamping(glm::vec3(0.925f, flyingCam ? 0.925f : 0.999999f, 0.925f));
+	rigidbody.SetDamping(glm::vec3(8.0f, flyingCam ? 8.0f : 1.0f, 8.0f));
 }
 
 void Player::UpdateKeys() {
@@ -128,7 +129,7 @@ void Player::HandleBlockInteraction(World* world, Renderer& renderer) {
 
 	if (block.type != BlockAtlas::Type::AIR) {
 		if (input->GetMouseButtonDown(Input::MouseButton::LEFT)) {
-			if (instantBreak && canBreakBlock) {
+			if ((instantBreak && canBreakBlock) || block.isFauna) {
 				breakingBlock = false;
 				breakBlockTimer = 0;
 				world->DestroyBlock(block.position);
@@ -144,9 +145,7 @@ void Player::HandleBlockInteraction(World* world, Renderer& renderer) {
 		}
 
 		if (breakingBlock) {
-			std::cout << breakBlockTimer / breakBlockDuration * 10 << std::endl;
 			int breakTexture = (int)BlockAtlas::Type::BREAK_1 + (int)((breakBlockTimer / breakBlockDuration * 10));
-			std::cout << breakTexture << std::endl;
 			renderer.RenderBlock((BlockAtlas::Type)breakTexture, block.position);
 		}
 		if (breakingBlock && breakBlockTimer >= breakBlockDuration) {
@@ -209,10 +208,10 @@ void Player::ApplyPhysics(World* world, float dt) {
 	
 	while (dtOffset >= setDT) {
 
-		rigidbody.IntegrateAcceleration(setDT);
-
 		if (collisionsEnabled)
 			CollisionDetection(world);
+
+		rigidbody.IntegrateAcceleration(setDT);
 
 		Jump();
 
@@ -224,7 +223,6 @@ void Player::ApplyPhysics(World* world, float dt) {
 	rigidbody.ClearForce();
 
 	camera->SetPosition(rigidbody.GetPosition() + camOffset);
-
 }
 
 void Player::CollisionDetection(World* world) {
@@ -285,8 +283,8 @@ void Player::CollisionDetection(World* world) {
 
 	point.normal *= -1;
 	float impulseForce = glm::dot(rigidbody.GetLinearVelocity(), point.normal);
-	float j = (1.0f + rigidbody.GetElasticity()) * impulseForce / rigidbody.GetInverseMass();
-	glm::vec3 fullImpulse = point.normal * j;
+	//float j = (1.0f + rigidbody.GetElasticity()) * impulseForce / rigidbody.GetInverseMass();
+	glm::vec3 fullImpulse = point.normal * impulseForce;
 
 	rigidbody.SetLinearVelocity(rigidbody.GetLinearVelocity() - fullImpulse);
 }
