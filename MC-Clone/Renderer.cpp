@@ -60,6 +60,25 @@ void Renderer::RenderFrame(float dt) {
 			}
 		}
 	}
+
+	for (int x = worldExtents.x; x < worldExtents.y; ++x) {
+		for (int z = worldExtents.z; z < worldExtents.w; ++z) {
+			Chunk* c = world->GetChunkAtPosition(glm::ivec2(x, z));
+			if (c) {
+				c->BindWater();
+				glDrawElements(GL_TRIANGLES, c->GetWaterIndices().size(), GL_UNSIGNED_INT, nullptr);
+			}
+		}
+	}
+
+	/*std::vector<glm::ivec2> chunksNearestToFarthest = world->GetChunksNearestToFarthest();
+	for (int i = 0; i < chunksNearestToFarthest.size(); ++i) {
+		Chunk* c = world->GetChunkAtPosition(chunksNearestToFarthest[i]);
+		if (c) {
+			c->BindWater();
+			glDrawElements(GL_TRIANGLES, c->GetWaterIndices().size(), GL_UNSIGNED_INT, nullptr);
+		}
+	}*/
 }
 
 void Renderer::EndFrame() {

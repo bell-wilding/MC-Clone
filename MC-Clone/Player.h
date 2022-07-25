@@ -60,7 +60,7 @@ protected:
 	float jumpCooldownTimer;
 
 	bool increaseSpeed;
-	bool decreaseSpped;
+	bool decreaseSpeed;
 	float movementSpeed;
 
 	float walkSpeed;

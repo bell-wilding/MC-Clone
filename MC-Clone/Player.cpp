@@ -24,7 +24,7 @@ Player::Player(PerspectiveCamera* cam, Input* input) : camera(cam), input(input)
 	walkSpeed = 60;
 	flySpeed = 500;
 	jumpVelocity = 12.0f;
-	jumpCooldown = 0.5f;
+	jumpCooldown = 0.4f;
 	jumpCooldownTimer = 0.0f;
 	movementSpeed = walkSpeed;
 
@@ -90,14 +90,14 @@ void Player::UpdateKeys() {
 	}
 
 
-	if (!flyingCamMode && !decreaseSpped && input->GetKeyDown(Input::KeyVal::LEFT_SHIFT)) {
-		decreaseSpped = true;
+	if (!flyingCamMode && !decreaseSpeed && input->GetKeyDown(Input::KeyVal::LEFT_SHIFT)) {
+		decreaseSpeed = true;
 		movementSpeed /= 4;
 		camOffset -= glm::vec3(0, 0.4f, 0);
 	}
 
-	if (!flyingCamMode && decreaseSpped && !input->GetKeyDown(Input::KeyVal::LEFT_SHIFT)) {
-		decreaseSpped = false;
+	if (!flyingCamMode && decreaseSpeed && !input->GetKeyDown(Input::KeyVal::LEFT_SHIFT)) {
+		decreaseSpeed = false;
 		movementSpeed *= 4;
 		camOffset += glm::vec3(0, 0.4f, 0);
 	}

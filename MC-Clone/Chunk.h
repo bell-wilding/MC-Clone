@@ -25,7 +25,11 @@ public:
 	std::vector<unsigned int> GetIndices() { return indices; }
 	std::vector<float> GetVertices() { return vertices; }
 
+	std::vector<unsigned int> GetWaterIndices() { return waterIndices; }
+	std::vector<float> GetWaterVertices() { return waterVertices; }
+
 	void Bind();
+	void BindWater();
 
 	void GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise);
 	void InitialiseBuffers();
@@ -63,6 +67,13 @@ protected:
 	unsigned int vao;
 	unsigned int vertexBuffer;
 	unsigned int indexBuffer;
+
+	std::vector<float> waterVertices;
+	std::vector<unsigned int> waterIndices;
+
+	unsigned int waterVAO;
+	unsigned int waterVertexBuffer;
+	unsigned int waterIndexBuffer;
 
 	bool hasMesh;
 };

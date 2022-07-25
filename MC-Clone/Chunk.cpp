@@ -18,6 +18,10 @@ Chunk::~Chunk() {
 	glDeleteBuffers(1, &vertexBuffer);
 	glDeleteBuffers(1, &indexBuffer);
 	glDeleteVertexArrays(1, &vao);
+
+	glDeleteBuffers(1, &waterVertexBuffer);
+	glDeleteBuffers(1, &waterIndexBuffer);
+	glDeleteVertexArrays(1, &waterVAO);
 }
 
 void Chunk::GetBlocks(BlockAtlas::Block blocks[16][256][16]) {
@@ -49,6 +53,12 @@ void Chunk::Bind() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 }
 
+void Chunk::BindWater() {
+	glBindVertexArray(waterVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, waterVertexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, waterIndexBuffer);
+}
+
 void Chunk::CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Chunk*>& world) {
 	GenerateMeshData(blockAtlas, world);
 	BufferData();
@@ -57,6 +67,9 @@ void Chunk::CreateMesh(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Ch
 void Chunk::GenerateMeshData(BlockAtlas& blockAtlas, std::unordered_map<glm::ivec2, Chunk*>& world) {
 	vertices.clear();
 	indices.clear();
+
+	waterVertices.clear();
+	waterIndices.clear();
 
 	glm::ivec3 checkDirections[] = {
 		glm::ivec3(-1, 0, 0),
@@ -173,6 +186,7 @@ void Chunk::GenerateMeshData(BlockAtlas& blockAtlas, std::unordered_map<glm::ive
 	}
 
 	int numVertices = 0;
+	int numWaterVertices = 0;
 
 	for (int x = 0; x < 16; ++x) {
 		for (int y = 0; y < 256; ++y) {
@@ -216,6 +230,26 @@ void Chunk::GenerateMeshData(BlockAtlas& blockAtlas, std::unordered_map<glm::ive
 
 					for (unsigned int index : faunaBlock2.indices) {
 						indices.push_back(numVertices - 4 + index);
+					}
+				}
+				else if (block.type == BlockAtlas::Type::WATER_TOP) {
+					CubeFace face = faceMap[checkDirections[5]];
+
+					for (int j = 0; j < 4; ++j) {
+						waterVertices.push_back(centerPosition.x + blockPos.x + face.vertices[j].x);
+						waterVertices.push_back(centerPosition.y + blockPos.y + face.vertices[j].y - 0.15f);
+						waterVertices.push_back(centerPosition.z + blockPos.z + face.vertices[j].z);
+						glm::vec2 uvs = GetUVForVertex(j, blockAtlas.GetBlockUVs(block.type).topUV);
+						waterVertices.push_back(uvs.x);
+						waterVertices.push_back(uvs.y);
+						waterVertices.push_back(face.normal.x);
+						waterVertices.push_back(face.normal.y);
+						waterVertices.push_back(face.normal.z);
+						numWaterVertices++;
+					}
+
+					for (unsigned int index : face.indices) {
+						waterIndices.push_back(numWaterVertices - 4 + index);
 					}
 				}
 				else if (block.type != BlockAtlas::Type::AIR && block.type != BlockAtlas::Type::WATER) {
@@ -288,6 +322,14 @@ void Chunk::BufferData() {
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+	glBindVertexArray(waterVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, waterVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, waterVertices.size() * sizeof(float), &waterVertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, waterIndexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, waterIndices.size() * sizeof(unsigned int), &waterIndices[0], GL_STATIC_DRAW);
 
 	hasMesh = true;
 }
@@ -406,14 +448,14 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 			}
 
 			for (int nextY = y + 1; nextY < 256; ++nextY) {
-				/*if (nextY > 70 && nextY < 100) {
+				if (nextY > 70 && nextY < 80) {
 					blockData[x][nextY][z] = { BlockAtlas::Type::WATER,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
-				} else if (nextY == 100) {
+				} else if (nextY == 80) {
 					blockData[x][nextY][z] = { BlockAtlas::Type::WATER_TOP,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
 				}
-				else {*/
+				else {
 					blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
-				//}
+				}
 			}
 		}
 	}
@@ -465,7 +507,7 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 
 			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.003f, (centerPosition.z + z) * 0.003f, 8) * 255;
 			int y = (int)yPos;
-			if (GetBlockAtPosition(glm::ivec3(x, y, z)).type == BlockAtlas::Type::GRASS) {
+			if (GetBlockAtPosition(glm::ivec3(x, y, z)).type == BlockAtlas::Type::GRASS && GetBlockAtPosition(glm::ivec3(x, y + 1, z)).type != BlockAtlas::Type::WATER_TOP) {
 				float randVal = ((double)rand() / (RAND_MAX));
 
 				if (y != 255) {
@@ -525,6 +567,24 @@ void Chunk::InitialiseBuffers() {
 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+	glGenVertexArrays(1, &waterVAO);
+	glBindVertexArray(waterVAO);
+
+	glGenBuffers(1, &waterVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, waterVertexBuffer);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void*)(3 * sizeof(float)));
+
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void*)(5 * sizeof(float)));
+
+	glGenBuffers(1, &waterIndexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, waterIndexBuffer);
 }
 
 void Chunk::PlaceTree(int x, int y, int z) {

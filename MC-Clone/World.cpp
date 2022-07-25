@@ -43,14 +43,40 @@ World::~World() {
 	}
 }
 
-void World::Update(glm::vec2 playerChunk) {
+void World::Update(glm::vec3 playerPos, glm::ivec2 playerChunk) {
 	worldExtents.x = playerChunk.x - activeDimensions / 2;
 	worldExtents.y = playerChunk.x + activeDimensions / 2;
 	// Same number of chunks on X and Z axis initially
 	worldExtents.z = playerChunk.y - activeDimensions / 2;
 	worldExtents.w = playerChunk.y + activeDimensions / 2;
 
-	int i = 0;
+	chunksNearestToFarthest.clear();
+	std::unordered_map<glm::ivec2, float> distances;
+
+	for (int x = worldExtents.x; x < worldExtents.y; ++x) {
+		for (int z = worldExtents.z; z < worldExtents.w; ++z) {
+			distances[glm::ivec2(x, z)] = glm::distance(glm::vec2(playerPos.x, playerPos.z), glm::vec2(x * 16, z * 16));
+		}
+	}
+
+	bool sorted = false;
+	while (!sorted) {
+		float shortestDist = FLT_MAX;
+		glm::ivec2 chunkCoords;
+		for (auto const& [key, val] : distances) {
+			if (val < shortestDist) {
+				shortestDist = val;
+				chunkCoords = key;
+			}
+		}
+		chunksNearestToFarthest.push_back(chunkCoords);
+		distances.erase(chunkCoords);
+		if (distances.size() == 0) {
+			sorted = true;
+		}
+	}
+
+	/*int i = 0;
 	for (int x = worldExtents.x; x < worldExtents.y; ++x) {
 		for (int z = worldExtents.z; z < worldExtents.w; ++z) {
 			if (!chunkMap[glm::ivec2(x, z)]) {
@@ -71,7 +97,7 @@ void World::Update(glm::vec2 playerChunk) {
 				std::cout << "Chunks Generated: " << i << std::endl;
 			}
 		}
-	}
+	}*/
 }
 
 Chunk* World::GetChunkAtPosition(glm::ivec2 chunkPosition) {

@@ -76,7 +76,7 @@ int main(void) {
 		player.Update(dt, world, renderer);
 		ui.Update(player);
 
-		//world->Update(player.GetChunkCoordinates());
+		world->Update(player.GetPosition(), player.GetChunkCoordinates());
 
 		renderer.EndFrame();
 	}
