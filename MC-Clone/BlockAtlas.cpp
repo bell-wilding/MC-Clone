@@ -37,6 +37,7 @@ BlockAtlas::BlockAtlas() {
 	uvMap[BlockAtlas::Type::BREAK_8]		= { glm::vec2(8, 1), glm::vec2(8, 1), glm::vec2(8, 1) };
 	uvMap[BlockAtlas::Type::BREAK_9]		= { glm::vec2(9, 1), glm::vec2(9, 1), glm::vec2(9, 1) };
 	uvMap[BlockAtlas::Type::BREAK_10]		= { glm::vec2(10, 1), glm::vec2(10, 1), glm::vec2(10, 1) };
+	uvMap[BlockAtlas::Type::SNOW]			= { glm::vec2(3, 12), glm::vec2(3, 16), glm::vec2(5, 12) };
 
 	nameMap[BlockAtlas::Type::AIR]				= "Air";
 	nameMap[BlockAtlas::Type::GRASS]			= "Grass";
@@ -73,6 +74,7 @@ BlockAtlas::BlockAtlas() {
 	nameMap[BlockAtlas::Type::BREAK_8]			= "Break 8";
 	nameMap[BlockAtlas::Type::BREAK_9]			= "Break 9";
 	nameMap[BlockAtlas::Type::BREAK_10]			= "Break 10";
+	nameMap[BlockAtlas::Type::SNOW]				= "Snow";
 
 	for (const auto &uvInfo: uvMap) {
 

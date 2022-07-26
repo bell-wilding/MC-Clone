@@ -127,7 +127,7 @@ void Player::HandleBlockInteraction(World* world, Renderer& renderer) {
 	glm::ivec3 collisionNormal;
 	BlockAtlas::Block block = GetNearestBlock(world, collisionNormal);
 
-	if (block.type != BlockAtlas::Type::AIR) {
+	if (block.type != BlockAtlas::Type::AIR && block.type != BlockAtlas::Type::WATER && block.type != BlockAtlas::Type::WATER_TOP) {
 		if (input->GetMouseButtonDown(Input::MouseButton::LEFT)) {
 			if ((instantBreak && canBreakBlock) || block.isFauna) {
 				breakingBlock = false;

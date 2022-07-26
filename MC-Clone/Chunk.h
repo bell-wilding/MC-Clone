@@ -76,5 +76,8 @@ protected:
 	unsigned int waterIndexBuffer;
 
 	bool hasMesh;
+
+	int waterLevel;
+	int snowLevel;
 };
 

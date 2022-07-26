@@ -43,7 +43,8 @@ public:
 		BREAK_7,
 		BREAK_8,
 		BREAK_9,
-		BREAK_10
+		BREAK_10,
+		SNOW
 	};
 
 	struct BlockUV {
