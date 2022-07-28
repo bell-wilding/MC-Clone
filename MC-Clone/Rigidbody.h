@@ -26,7 +26,10 @@ public:
 
 	void ApplyLinearImpulse(glm::vec3 force) { linearVelocity += force * inverseMass; }
 
+	void SetApplyMaxVelocity(bool applyMaxVel) { applyMaxVelocity = applyMaxVel; }
 	void SetApplyGravity(bool gravityOn) { applyGravity = gravityOn; }
+
+	void SetGravity(glm::vec3 newGravity) { gravity = newGravity; }
 
 protected:
 
@@ -40,7 +43,10 @@ protected:
 
 	glm::vec3 position;
 
+	glm::vec3 maxVelocity;
+
 	float elasticity;
 
 	bool applyGravity;
+	bool applyMaxVelocity;
 };

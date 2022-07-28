@@ -61,6 +61,8 @@ void Renderer::RenderFrame(float dt) {
 		}
 	}
 
+	glDisable(GL_CULL_FACE);
+
 	for (int x = worldExtents.x; x < worldExtents.y; ++x) {
 		for (int z = worldExtents.z; z < worldExtents.w; ++z) {
 			Chunk* c = world->GetChunkAtPosition(glm::ivec2(x, z));
@@ -70,6 +72,8 @@ void Renderer::RenderFrame(float dt) {
 			}
 		}
 	}
+
+	glEnable(GL_CULL_FACE);
 
 	/*std::vector<glm::ivec2> chunksNearestToFarthest = world->GetChunksNearestToFarthest();
 	for (int i = 0; i < chunksNearestToFarthest.size(); ++i) {

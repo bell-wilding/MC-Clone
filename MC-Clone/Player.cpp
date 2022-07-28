@@ -26,6 +26,7 @@ Player::Player(PerspectiveCamera* cam, Input* input) : camera(cam), input(input)
 	jumpVelocity = 12.0f;
 	jumpCooldown = 0.4f;
 	jumpCooldownTimer = 0.0f;
+	waterJumpForce = 75.0f;
 	movementSpeed = walkSpeed;
 
 	breakBlockDuration = 1;
@@ -68,6 +69,7 @@ void Player::ToggleFlyingCamMode(bool flyingCam) {
 	movementSpeed = flyingCam ? flySpeed : walkSpeed;
 	collisionsEnabled = !flyingCam;
 	rigidbody.SetDamping(glm::vec3(8.0f, flyingCam ? 8.0f : 1.0f, 8.0f));
+	rigidbody.SetApplyMaxVelocity(false);
 }
 
 void Player::UpdateKeys() {
@@ -204,6 +206,13 @@ void Player::ChangeActiveBlockType() {
 
 void Player::ApplyPhysics(World* world, float dt) {
 
+	if (inWater) {
+		rigidbody.SetGravity(glm::vec3(0, -5.0f, 0));
+	}
+	else {
+		rigidbody.SetGravity(glm::vec3(0, -45.0f, 0));
+	}
+
 	dtOffset += dt;
 	
 	while (dtOffset >= setDT) {
@@ -226,6 +235,8 @@ void Player::ApplyPhysics(World* world, float dt) {
 }
 
 void Player::CollisionDetection(World* world) {
+
+	bool waterBlockCollision = false;
 
 	glm::ivec3 checkPositions[] = {
 		// Top
@@ -263,13 +274,30 @@ void Player::CollisionDetection(World* world) {
 		if (!collidingBlock.isFauna 
 			&& collidingBlock.type != BlockAtlas::AIR 
 			&& CollisionDetection::AABBIntersection(boxCollider, rigidbody.GetPosition(), AABB(), blockCoordinates + checkPositions[i], contactPoint)) {
-			
-			ImpulseCollisionResolution(contactPoint);
 
-			if (i <= 5) {
-				grounded = true;
+			if (collidingBlock.type == BlockAtlas::WATER || collidingBlock.type == BlockAtlas::WATER_TOP) {
+				waterBlockCollision = true;
+				if (i >= 10) {
+					if (!inWater) {
+						rigidbody.SetLinearVelocity(rigidbody.GetLinearVelocity() * glm::vec3(1, 0.25, 1));
+					}
+					inWater = true;
+					rigidbody.SetApplyMaxVelocity(true);
+				}
 			}
+			else {
+				ImpulseCollisionResolution(contactPoint);
+
+				if (i <= 5) {
+					grounded = true;
+				}
+			}		
 		}
+	}
+
+	if (!waterBlockCollision) {
+		inWater = false;
+		rigidbody.SetApplyMaxVelocity(false);
 	}
 }
 
@@ -290,10 +318,16 @@ void Player::CollisionDetection(World* world) {
 }
 
  void Player::Jump() {
-	 if (grounded && jumpCooldownTimer > jumpCooldown && !flyingCamMode && input->GetKeyDown(Input::KeyVal::SPACE)) {
-		 rigidbody.ApplyLinearImpulse(glm::vec3(0, 1, 0) * jumpVelocity);
-		 jumpCooldownTimer = 0;
-		 grounded = false;
+	 if (!flyingCamMode && input->GetKeyDown(Input::KeyVal::SPACE)) {
+		 if (inWater) {
+			 rigidbody.AddForce(glm::vec3(0, 1, 0) * waterJumpForce);
+		 }
+		 else if (grounded && jumpCooldownTimer > jumpCooldown) {
+			 rigidbody.ApplyLinearImpulse(glm::vec3(0, 1, 0) * jumpVelocity);
+			 jumpCooldownTimer = 0;
+			 grounded = false;
+		 }
+
 	 }
  }
 

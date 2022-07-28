@@ -412,16 +412,17 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 	for (int x = 0; x < 16; ++x) {
 		for (int z = 0; z < 16; ++z) {
 
-			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.0015f, (centerPosition.z + z) * 0.0015f, 7, 0.75) * 350;
+			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.0015f, (centerPosition.z + z) * 0.0015f, 7, 0.7) * 350;
 			int y = (int)yPos;
 			
-			if (y >= snowLevel) {
+			/*if (y >= snowLevel) {
 				blockData[x][y][z] = { BlockAtlas::Type::SNOW,  glm::vec3(centerPosition.x + x, centerPosition.y + y, centerPosition.z + z), false };
 			}
 			else if (y > snowLevel - 10) {
 				blockData[x][y][z] = { BlockAtlas::Type::STONE,  glm::vec3(centerPosition.x + x, centerPosition.y + y, centerPosition.z + z), false };
 			}
-			else if (y <= waterLevel) {
+			else */
+			if (y <= waterLevel) {
 				blockData[x][y][z] = { BlockAtlas::Type::SAND,  glm::vec3(centerPosition.x + x, centerPosition.y + y, centerPosition.z + z), false };
 			}
 			else {
@@ -430,7 +431,7 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 			numBlocks++;
 
 			for (int nextY = y + 1; nextY < 256; ++nextY) {
-				if (nextY > waterLevel - 10 && nextY < waterLevel) {
+				if (nextY < waterLevel) {
 					blockData[x][nextY][z] = { BlockAtlas::Type::WATER,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
 				}
 				else if (nextY == waterLevel) {
@@ -479,14 +480,14 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 
 	for (int x = 0; x < 16; ++x) {
 		for (int z = 0; z < 16; ++z) {
-			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.0015f, (centerPosition.z + z) * 0.0015f, 7, 0.75) * 350;
+			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.0015f, (centerPosition.z + z) * 0.0015f, 7, 0.7) * 350;
 			int y = (int)yPos;
 
 			entrance = y < waterLevel ? false : entrance;
 
 			bool destroyBlockAbove = false;
 
-			for (int nextY = entrance ? y : y - 2; nextY > 0; --nextY) {
+			for (int nextY = entrance ? y : y - 4; nextY > 0; --nextY) {
 				/*float val = noise->normalizedOctave3D_01((centerPosition.x + x) * 0.025f, (centerPosition.z + z) * 0.025f, (centerPosition.y + nextY) * 0.03f, 4, 0.75);
 				if (nextY <= y - 2) {
 					if (val < 0.41|| val > 0.59) blockData[x][nextY][z] = { BlockAtlas::Type::AIR,  glm::vec3(centerPosition.x + x, centerPosition.y + nextY, centerPosition.z + z), true };
@@ -522,29 +523,29 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 	for (int x = 0; x < 16; ++x) {
 		for (int z = 0; z < 16; ++z) {
 
-			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.0015f, (centerPosition.z + z) * 0.0015f, 7, 0.75) * 350;
+			float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.0015f, (centerPosition.z + z) * 0.0015f, 7, 0.7) * 350;
 			int y = (int)yPos;
 			if (GetBlockAtPosition(glm::ivec3(x, y, z)).type == BlockAtlas::Type::GRASS && y >= waterLevel) {
 				float randVal = ((double)rand() / (RAND_MAX));
 
 				if (y != 255) {
-					if (randVal < 0.5) {
+					if (randVal < 0.3) {
 						blockData[x][y + 1][z] = { BlockAtlas::Type::TALL_GRASS,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
 						numBlocks++;
 					}
-					if (randVal < 0.15) {
+					if (randVal < 0.1) {
 						blockData[x][y + 1][z] = { BlockAtlas::Type::RED_FLOWER,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
 					}
-					if (randVal < 0.1) {
+					if (randVal < 0.075) {
 						blockData[x][y + 1][z] = { BlockAtlas::Type::YELLOW_FLOWER,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
 					}
-					if (randVal < 0.05) {
+					if (randVal < 0.02) {
 						blockData[x][y + 1][z] = { BlockAtlas::Type::RED_MUSHROOM,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
 					}
-					if (randVal < 0.03) {
+					if (randVal < 0.01) {
 						blockData[x][y + 1][z] = { BlockAtlas::Type::SAPLING,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
 					}
-					if (randVal < 0.01) {
+					if (randVal < 0.005) {
 						blockData[x][y + 1][z] = { BlockAtlas::Type::BROWN_MUSHROOM,  glm::vec3(centerPosition.x + x, centerPosition.y + y + 1, centerPosition.z + z), true, true };
 					}
 				}
@@ -556,7 +557,7 @@ void Chunk::GenerateChunkData(int seed, siv::BasicPerlinNoise<float>* noise) {
 	for (int x = 0; x < 16; ++x) {
 		for (int z = 0; z < 16; ++z) {
 			if (((double)rand() / (RAND_MAX)) < 0.01 && x > 2 && x < 14 && z > 2 && z < 14) {
-				float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.0015f, (centerPosition.z + z) * 0.0015f, 7, 0.75) * 350;
+				float yPos = noise->normalizedOctave2D_01((centerPosition.x + x) * 0.0015f, (centerPosition.z + z) * 0.0015f, 7, 0.7) * 350;
 				int y = (int)yPos;
 				if (GetBlockAtPosition(glm::ivec3(x, y, z)).type == BlockAtlas::Type::GRASS && y >= waterLevel) {
 					PlaceTree(x, y + 1, z);

@@ -83,6 +83,8 @@ protected:
 	Input* input;
 
 	bool flyingCamMode;
+	bool inWater;
+	float waterJumpForce;
 
 	float breakBlockDuration;
 	float breakBlockTimer;
