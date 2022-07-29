@@ -226,5 +226,8 @@
     <None Include="res\shaders\Line.shader">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="res\shaders\UnderWaterPP.shader">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

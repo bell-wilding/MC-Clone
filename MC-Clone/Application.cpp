@@ -50,7 +50,7 @@ int main(void) {
 	if (!window)
 		return -1;
 
-	World* world = new World(3, 30);
+	World* world = new World(3, 20);
 	Input* input = new Input(window);
 	PerspectiveCamera* cam = new PerspectiveCamera(input, glm::vec3(0, 100, 0), -80, 0.1f, 1000, 0, 0);
 	Renderer renderer(cam, window, world);
@@ -71,9 +71,12 @@ int main(void) {
 
 		stats.Update(dt);
 
-		renderer.RenderFrame(dt);
+		renderer.RenderFrame(dt, player.CamUnderWater());
+
+		renderer.RenderPostProcessing(player.CamUnderWater());
 
 		player.Update(dt, world, renderer);
+
 		ui.Update(player);
 
 		world->Update(player.GetPosition(), player.GetChunkCoordinates());

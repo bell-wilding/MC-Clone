@@ -44,11 +44,16 @@ Player::Player(PerspectiveCamera* cam, Input* input) : camera(cam), input(input)
 
 	flyingCamMode = false;
 	collisionsEnabled = true;
+
+	inWater = false;
+	camUnderWater = false;
+
+	waterLevel = 120.25;
 }
 
 void Player::Update(float dt, World* world, Renderer& renderer) {
 	chunkCoordinates = glm::ivec2(camera->GetPosition().x / 16, camera->GetPosition().z / 16);
-	blockCoordinates = glm::ivec3(std::round(camera->GetPosition().x), std::round(camera->GetPosition().y), std::round(camera->GetPosition().z));
+	blockCoordinates = glm::ivec3(std::round(camera->GetPosition().x), std::round(camera->GetPosition().y) - 1, std::round(camera->GetPosition().z));
 
 	jumpCooldownTimer += dt;
 	if (breakingBlock)
@@ -56,6 +61,8 @@ void Player::Update(float dt, World* world, Renderer& renderer) {
 
 	ApplyPhysics(world, dt);
 	camera->Update(dt);
+
+	camUnderWater = camera->GetPosition().y < waterLevel;
 
 	UpdateKeys();
 
@@ -69,7 +76,7 @@ void Player::ToggleFlyingCamMode(bool flyingCam) {
 	movementSpeed = flyingCam ? flySpeed : walkSpeed;
 	collisionsEnabled = !flyingCam;
 	rigidbody.SetDamping(glm::vec3(8.0f, flyingCam ? 8.0f : 1.0f, 8.0f));
-	rigidbody.SetApplyMaxVelocity(false);
+	rigidbody.SetApplyMaxVelocity(!flyingCam);
 }
 
 void Player::UpdateKeys() {
@@ -217,12 +224,11 @@ void Player::ApplyPhysics(World* world, float dt) {
 	
 	while (dtOffset >= setDT) {
 
-		if (collisionsEnabled)
-			CollisionDetection(world);
-
-		rigidbody.IntegrateAcceleration(setDT);
+		CollisionDetection(world);
 
 		Jump();
+
+		rigidbody.IntegrateAcceleration(setDT);
 
 		rigidbody.IntegrateVelocity(setDT);
 
@@ -239,14 +245,15 @@ void Player::CollisionDetection(World* world) {
 	bool waterBlockCollision = false;
 
 	glm::ivec3 checkPositions[] = {
-		// Top
+		// Bottom
 		glm::ivec3(0, -2, 0),
 		glm::ivec3(1, -2, 0),
 		glm::ivec3(0, -2, -1),
 		glm::ivec3(-1, -2, 0),
 		glm::ivec3(0, -2, 1),
+		glm::ivec3(0, -1, 0),
 
-		// Bottom
+		// Top
 		glm::ivec3(0, 1, 0),
 		glm::ivec3(1, 1, 0),
 		glm::ivec3(0, 1, -1),
@@ -264,11 +271,17 @@ void Player::CollisionDetection(World* world) {
 		glm::ivec3(0, 0, -1),
 		glm::ivec3(-1, 0, 0),
 		glm::ivec3(0, 0, 1),
+
+		glm::ivec3(1, 0, 0),
+		glm::ivec3(0, 0, -1),
+		glm::ivec3(-1, 0, 0),
+		glm::ivec3(0, 0, 1),
 	};
 
 	CollisionDetection::ContactPoint contactPoint;
+	BlockAtlas b;
 
-	for (int i = 0; i < 18; ++i) {
+	for (int i = 0; i < 19; ++i) {
 		BlockAtlas::Block collidingBlock = world->GetBlockAtPosition(blockCoordinates + checkPositions[i]);
 
 		if (!collidingBlock.isFauna 
@@ -278,17 +291,18 @@ void Player::CollisionDetection(World* world) {
 			if (collidingBlock.type == BlockAtlas::WATER || collidingBlock.type == BlockAtlas::WATER_TOP) {
 				waterBlockCollision = true;
 				if (i >= 10) {
-					if (!inWater) {
+					if (!inWater && !flyingCamMode) {
 						rigidbody.SetLinearVelocity(rigidbody.GetLinearVelocity() * glm::vec3(1, 0.25, 1));
 					}
+					if (!flyingCamMode)
+						rigidbody.SetApplyMaxVelocity(true);
 					inWater = true;
-					rigidbody.SetApplyMaxVelocity(true);
 				}
 			}
-			else {
+			else if (collisionsEnabled) {
 				ImpulseCollisionResolution(contactPoint);
 
-				if (i <= 5) {
+				if (i <= 6) {
 					grounded = true;
 				}
 			}		
@@ -343,7 +357,10 @@ BlockAtlas::Block Player::GetNearestBlock(World* world, glm::ivec3& collisionNor
 		for (int y = closestY - 6; y < closestY + 7; ++y) {
 			for (int z = blockCoordinates.z - 6; z < blockCoordinates.z + 7; ++z) {
 				BlockAtlas::Block block = world->GetBlockAtPosition(glm::ivec3(x, y, z));
-				if (block.type != BlockAtlas::Type::AIR && CollisionDetection::RayAABBIntersection(ray, glm::vec3(x, y, z), glm::vec3(0.5, 0.5, 0.5), col)) {
+				if (block.type != BlockAtlas::Type::AIR 
+					&& block.type != BlockAtlas::Type::WATER
+					&& block.type != BlockAtlas::Type::WATER_TOP
+					&& CollisionDetection::RayAABBIntersection(ray, glm::vec3(x, y, z), glm::vec3(0.5, 0.5, 0.5), col)) {
 					if (col.rayDistance < smallestDist) {
 						smallestDist = col.rayDistance;
 						collisionNormal = col.normal;

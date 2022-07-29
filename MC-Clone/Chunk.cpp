@@ -328,10 +328,10 @@ void Chunk::BufferData() {
 	glBindVertexArray(waterVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, waterVertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, waterVertices.size() * sizeof(float), &waterVertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, waterVertices.size() * sizeof(float), waterVertices.size() > 0 ? &waterVertices[0] : nullptr, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, waterIndexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, waterIndices.size() * sizeof(unsigned int), &waterIndices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, waterIndices.size() * sizeof(unsigned int), waterIndices.size() > 0 ? &waterIndices[0] : nullptr, GL_STATIC_DRAW);
 
 	hasMesh = true;
 }

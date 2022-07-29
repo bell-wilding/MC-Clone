@@ -32,6 +32,8 @@ public:
 
 	void ToggleFlyingCamMode(bool flyingCam);
 
+	bool CamUnderWater() { return inWater && camUnderWater; }
+
 protected:
 
 	Rigidbody rigidbody;
@@ -82,8 +84,11 @@ protected:
 
 	Input* input;
 
+	float waterLevel;
+
 	bool flyingCamMode;
 	bool inWater;
+	bool camUnderWater;
 	float waterJumpForce;
 
 	float breakBlockDuration;

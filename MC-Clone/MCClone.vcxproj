@@ -187,6 +187,7 @@
     <None Include="res\shaders\Chunk.shader" />
     <None Include="res\shaders\Line.shader" />
     <None Include="res\shaders\Skybox.shader" />
+    <None Include="res\shaders\UnderWaterPP.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
